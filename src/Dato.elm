@@ -1,7 +1,7 @@
-module Dato exposing (Dato, fromPosix, toSeed, toString, tomorrow, yesterday)
+module Dato exposing (Dato, fromPosix, nesteArbeidsdag, toSeed, toString, toUkedagString)
 
 import Random exposing (Seed)
-import Time exposing (Month(..), Posix)
+import Time exposing (Month(..), Posix, Weekday(..))
 
 
 type Dato
@@ -21,22 +21,38 @@ døgnIMillis =
     24 * 60 * 60 * 1000
 
 
-tomorrow : Dato -> Dato
-tomorrow (Dato posix) =
+nesteArbeidsdag : Dato -> Dato
+nesteArbeidsdag (Dato posix) =
     posix
         |> Time.posixToMillis
-        |> (+) døgnIMillis
+        |> (+) (dagerTilNesteArbeidsdag posix * døgnIMillis)
         |> Time.millisToPosix
         |> fromPosix
 
 
-yesterday : Dato -> Dato
-yesterday (Dato posix) =
-    posix
-        |> Time.posixToMillis
-        |> (-) døgnIMillis
-        |> Time.millisToPosix
-        |> fromPosix
+dagerTilNesteArbeidsdag : Posix -> Int
+dagerTilNesteArbeidsdag posix =
+    case Time.toWeekday Time.utc posix of
+        Mon ->
+            1
+
+        Tue ->
+            1
+
+        Wed ->
+            1
+
+        Thu ->
+            1
+
+        Fri ->
+            3
+
+        Sat ->
+            2
+
+        Sun ->
+            1
 
 
 
@@ -102,6 +118,31 @@ toString (Dato posix) =
                 |> String.fromInt
     in
     dag ++ ". " ++ måned ++ " " ++ år
+
+
+toUkedagString : Dato -> String
+toUkedagString (Dato posix) =
+    case Time.toWeekday Time.utc posix of
+        Mon ->
+            "Mandag"
+
+        Tue ->
+            "Tirsdag"
+
+        Wed ->
+            "Onsdag"
+
+        Thu ->
+            "Torsdag"
+
+        Fri ->
+            "Fredag"
+
+        Sat ->
+            "Lørdag"
+
+        Sun ->
+            "Søndag"
 
 
 

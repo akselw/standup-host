@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Dato exposing (Dato)
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, type_)
 import Html.Events exposing (onClick)
 import Random
 import Random.List
@@ -21,7 +21,13 @@ type Model
         { dagensDato : Dato
         , dagensRekkefølge : List String
         , morgensdagensRekkefølge : List String
+        , valgtDag : ValgtDag
         }
+
+
+type ValgtDag
+    = Idag
+    | NesteArbeidsdag
 
 
 teamBruke : List String
@@ -44,6 +50,7 @@ teamBruke =
 type Msg
     = TimeReceived Posix
     | VelgNyPersonIDag
+    | EndreFane ValgtDag
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,10 +70,11 @@ update msg model =
                         |> Tuple.first
                 , morgensdagensRekkefølge =
                     dato
-                        |> Dato.tomorrow
+                        |> Dato.nesteArbeidsdag
                         |> Dato.toSeed
                         |> Random.step (Random.List.shuffle teamBruke)
                         |> Tuple.first
+                , valgtDag = Idag
                 }
             , Cmd.none
             )
@@ -84,6 +92,14 @@ update msg model =
                         [] ->
                             ( model, Cmd.none )
 
+        EndreFane valgtDag ->
+            case model of
+                Init ->
+                    ( model, Cmd.none )
+
+                Success modelInfo ->
+                    ( Success { modelInfo | valgtDag = valgtDag }, Cmd.none )
+
 
 
 --- VIEW ---
@@ -100,7 +116,16 @@ view model =
                 Just standupVert ->
                     div [ class "wrapper" ]
                         [ div [ class "standup-host" ]
-                            [ h1 [] [ text standupVert ]
+                            [ div []
+                                [ button [ onClick (EndreFane Idag), type_ "button" ] [ text "I dag" ]
+                                , button [ onClick (EndreFane NesteArbeidsdag), type_ "button" ]
+                                    [ dagensDato
+                                        |> Dato.nesteArbeidsdag
+                                        |> Dato.toUkedagString
+                                        |> text
+                                    ]
+                                ]
+                            , h1 [] [ text standupVert ]
                             , p [] [ text "skal holde standup" ]
                             , p [] [ text (Dato.toString dagensDato) ]
                             , button
