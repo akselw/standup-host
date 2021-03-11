@@ -18,8 +18,9 @@ import Time exposing (Month(..), Posix)
 type Model
     = Init
     | Success
-        { dato : Dato
-        , rekkefølge : List String
+        { dagensDato : Dato
+        , dagensRekkefølge : List String
+        , morgensdagensRekkefølge : List String
         }
 
 
@@ -42,7 +43,7 @@ teamBruke =
 
 type Msg
     = TimeReceived Posix
-    | VelgNyPerson
+    | VelgNyPersonIDag
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -54,9 +55,15 @@ update msg model =
                     Dato.fromPosix posix
             in
             ( Success
-                { dato = dato
-                , rekkefølge =
+                { dagensDato = dato
+                , dagensRekkefølge =
                     dato
+                        |> Dato.toSeed
+                        |> Random.step (Random.List.shuffle teamBruke)
+                        |> Tuple.first
+                , morgensdagensRekkefølge =
+                    dato
+                        |> Dato.tomorrow
                         |> Dato.toSeed
                         |> Random.step (Random.List.shuffle teamBruke)
                         |> Tuple.first
@@ -64,15 +71,15 @@ update msg model =
             , Cmd.none
             )
 
-        VelgNyPerson ->
+        VelgNyPersonIDag ->
             case model of
                 Init ->
                     ( model, Cmd.none )
 
                 Success record ->
-                    case record.rekkefølge of
+                    case record.dagensRekkefølge of
                         _ :: rest ->
-                            ( Success { record | rekkefølge = rest }, Cmd.none )
+                            ( Success { record | dagensRekkefølge = rest }, Cmd.none )
 
                         [] ->
                             ( model, Cmd.none )
@@ -88,16 +95,16 @@ view model =
         Init ->
             text ""
 
-        Success { dato, rekkefølge } ->
-            case List.head rekkefølge of
+        Success { dagensDato, dagensRekkefølge } ->
+            case List.head dagensRekkefølge of
                 Just standupVert ->
                     div [ class "wrapper" ]
                         [ div [ class "standup-host" ]
                             [ h1 [] [ text standupVert ]
                             , p [] [ text "skal holde standup" ]
-                            , p [] [ text (Dato.toString dato) ]
+                            , p [] [ text (Dato.toString dagensDato) ]
                             , button
-                                [ onClick VelgNyPerson ]
+                                [ onClick VelgNyPersonIDag ]
                                 [ text (standupVert ++ " kan ikke") ]
                             ]
                         ]
