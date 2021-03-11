@@ -155,7 +155,11 @@ view model =
                         ]
 
                 Nothing ->
-                    text "Da kunne visst ingen da..."
+                    div [ class "wrapper" ]
+                        [ div [ class "standup-host" ]
+                            [ text "Da kunne visst ingen da..."
+                            ]
+                        ]
 
 
 
