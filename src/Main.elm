@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Dato exposing (Dato)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -17,7 +18,7 @@ import Time exposing (Month(..), Posix)
 type Model
     = Init
     | Success
-        { time : Posix
+        { dato : Dato
         , rekkefølge : List String
         }
 
@@ -44,73 +45,19 @@ type Msg
     | VelgNyPerson
 
 
-monthToInt : Month -> Int
-monthToInt month =
-    case month of
-        Jan ->
-            1
-
-        Feb ->
-            2
-
-        Mar ->
-            3
-
-        Apr ->
-            4
-
-        May ->
-            5
-
-        Jun ->
-            6
-
-        Jul ->
-            7
-
-        Aug ->
-            8
-
-        Sep ->
-            9
-
-        Oct ->
-            10
-
-        Nov ->
-            11
-
-        Dec ->
-            12
-
-
-dateToInt : Posix -> Int
-dateToInt posix =
-    let
-        year =
-            Time.toYear Time.utc posix
-
-        month =
-            posix
-                |> Time.toMonth Time.utc
-                |> monthToInt
-
-        day =
-            Time.toDay Time.utc posix
-    in
-    Debug.log "int" (year * 10000 + month * 100 + day)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TimeReceived pos ->
+        TimeReceived posix ->
+            let
+                dato =
+                    Dato.fromPosix posix
+            in
             ( Success
-                { time = pos
+                { dato = dato
                 , rekkefølge =
-                    pos
-                        |> dateToInt
-                        |> Random.initialSeed
+                    dato
+                        |> Dato.toSeed
                         |> Random.step (Random.List.shuffle teamBruke)
                         |> Tuple.first
                 }
@@ -141,13 +88,14 @@ view model =
         Init ->
             text ""
 
-        Success { rekkefølge } ->
+        Success { dato, rekkefølge } ->
             case List.head rekkefølge of
                 Just standupVert ->
                     div [ class "wrapper" ]
                         [ div [ class "standup-host" ]
                             [ h1 [] [ text standupVert ]
                             , p [] [ text "skal holde standup" ]
+                            , p [] [ text (Dato.toString dato) ]
                             , button
                                 [ onClick VelgNyPerson ]
                                 [ text (standupVert ++ " kan ikke") ]
