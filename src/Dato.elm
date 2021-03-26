@@ -170,7 +170,7 @@ dateToInt posix =
         day =
             Time.toDay Time.utc posix
     in
-    Debug.log "int" (year * 10000 + month * 100 + day)
+    year * 10000 + month * 100 + day
 
 
 monthToInt : Month -> Int
