@@ -45,7 +45,7 @@ teamBruke : List String
 teamBruke =
     [ "Abdifatah"
     , "Aksel"
-    , "Aleksander"
+    , "Sjoffa, for Aleksander er for sensitivt"
     , "Anne Mari"
     , "Arild"
     , "Arnstein"
