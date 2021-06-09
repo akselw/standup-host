@@ -51,6 +51,9 @@ teamBruke =
     , "Arnstein"
     , "Ingrid"
     , "Tormod"
+    , "Linn Pinn Sukkerspinn"
+    , "Mia"
+    , "Nga"
     ]
 
 
