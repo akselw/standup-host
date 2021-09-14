@@ -45,15 +45,17 @@ teamBruke : List String
 teamBruke =
     [ "Abdifatah"
     , "Aksel"
-    , "Sjoffa, for Aleksander er for sensitivt"
+    , "Sjoffa"
     , "Anne Mari"
     , "Arild"
     , "Arnstein"
     , "Ingrid"
     , "Tormod"
-    , "Linn Pinn Sukkerspinn"
+    , "Linn"
     , "Mia"
     , "Nga"
+    , "Martin"
+    , "Maren"
     ]
 
 
