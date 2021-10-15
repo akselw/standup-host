@@ -56,6 +56,7 @@ teamBruke =
     , "Nga"
     , "Martin"
     , "Maren"
+    , "Ola"
     ]
 
 
