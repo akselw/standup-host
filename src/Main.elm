@@ -43,13 +43,11 @@ type ValgtDag
 
 teamBruke : List String
 teamBruke =
-    [ "Abdifatah"
-    , "Aksel"
+    [ "Aksel"
     , "Sjoffa"
     , "Anne Mari"
     , "Arild"
     , "Arnstein"
-    , "Ingrid"
     , "Tormod"
     , "Linn"
     , "Mia"
@@ -57,6 +55,7 @@ teamBruke =
     , "Martin"
     , "Maren"
     , "Ola"
+    , "Lars-Petter"
     ]
 
 
