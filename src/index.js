@@ -15,10 +15,15 @@ const app = Elm.Main.init({
 const fetchTeam = async (shortname) => {
     const { data, error } = await supabase
         .from('team')
-        .select()
+        .select(`
+            navn,
+            shortname,
+            teammedlem (navn)
+        `)
         .match({ shortname: shortname })
 
+    console.log({ error })
     console.log({ data });
 }
 
-const b = fetchTeam('elm-2022');
+const b = fetchTeam('teamoppgjor');
