@@ -1,6 +1,6 @@
-insert into public.team (id, navn)
-values ('479351d7-b553-4d4e-ae1f-c1538789afa4', 'Team Oppgjør'),
-       ('4ff22cd0-32ad-485e-8206-caa03952c280', 'Elm-faggruppa');
+insert into public.team (id, navn, shortname)
+values ('479351d7-b553-4d4e-ae1f-c1538789afa4', 'Team Oppgjør', 'teamoppgjor'),
+       ('4ff22cd0-32ad-485e-8206-caa03952c280', 'Elm-faggruppa', 'elm-2022');
 
 
 insert into public.teammedlem (id, team_id, navn)
