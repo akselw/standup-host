@@ -47,7 +47,6 @@ teamBruke =
     , "Arild"
     , "Arnstein"
     , "Ingunn"
-    , "Lars-Petter"
     , "Maren"
     , "Martin"
     , "Mia"
@@ -56,6 +55,7 @@ teamBruke =
     , "Sjoffa"
     , "Svein Roar"
     , "Tormod"
+    , "A9"
     ]
 
 
