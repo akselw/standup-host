@@ -41,21 +41,17 @@ type ValgtDag
     | NesteArbeidsdag
 
 
-teamBruke : List String
-teamBruke =
-    [ "Andrew"
-    , "Arild"
-    , "Arnstein"
-    , "Ingunn"
-    , "Maren"
-    , "Martin"
-    , "Mia"
-    , "Nga"
-    , "Ola"
-    , "Sjoffa"
-    , "Svein Roar"
-    , "Tormod"
-    , "A9"
+teamKunde : List String
+teamKunde =
+    [ "Aksel"
+    , "Anne Line"
+    , "Herman"
+    , "Jakob"
+    , "Julie"
+    , "Mcklien"
+    , "Nicoline"
+    , "Roberth"
+    , "Sven"
     ]
 
 
@@ -84,13 +80,13 @@ update msg model =
                 , dagensRekkefølge =
                     dato
                         |> Dato.toSeed
-                        |> Random.step (Random.List.shuffle teamBruke)
+                        |> Random.step (Random.List.shuffle teamKunde)
                         |> Tuple.first
                 , morgensdagensRekkefølge =
                     dato
                         |> Dato.nesteArbeidsdag
                         |> Dato.toSeed
-                        |> Random.step (Random.List.shuffle teamBruke)
+                        |> Random.step (Random.List.shuffle teamKunde)
                         |> Tuple.first
                 , valgtDag = Idag
                 , morgendagensAnimationState = IkkeVisNoe
