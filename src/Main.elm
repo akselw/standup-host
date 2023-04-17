@@ -44,14 +44,14 @@ type ValgtDag
 teamKunde : List String
 teamKunde =
     [ "Aksel"
-    , "Anne Line"
     , "Herman"
     , "Jakob"
     , "Julie"
+    , "Leif Erik"
     , "Mcklien"
-    , "Nicoline"
     , "Roberth"
     , "Sven"
+    , "Synne"
     ]
 
 
