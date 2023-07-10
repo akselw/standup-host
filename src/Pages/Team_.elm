@@ -1,10 +1,13 @@
 module Pages.Team_ exposing (Model, Msg, page)
 
+import Api
+import DatabaseApiToken exposing (DatabaseApiToken)
 import Dato exposing (Dato)
 import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, type_)
 import Html.Events exposing (onClick)
+import Http
 import Page exposing (Page)
 import Process
 import Random
@@ -12,6 +15,7 @@ import Random.List
 import Route exposing (Route)
 import Shared
 import Task
+import Team exposing (Team)
 import Time exposing (Month(..), Posix)
 import View exposing (View)
 
@@ -72,6 +76,7 @@ type Msg
     | VelgNyPersonIDag
     | VelgNyPersonNesteArbeidsdag
     | EndreFane ValgtDag
+    | HentTeamResponse (Result Http.Error Team)
     | AnimationTick
 
 
@@ -156,6 +161,9 @@ update msg model =
                                 |> Task.perform (\_ -> AnimationTick)
                                 |> Effect.sendCmd
                     )
+
+        HentTeamResponse result ->
+            ( model, Effect.none )
 
 
 nesteAnimationState : AnimationState -> AnimationState
@@ -315,19 +323,23 @@ viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
 --- MAIN ---
 
 
-init : () -> ( Model, Effect Msg )
-init _ =
-    ( Init
-    , Time.now
-        |> Task.perform TimeReceived
-        |> Effect.sendCmd
-    )
+init : DatabaseApiToken -> String -> () -> ( Model, Effect Msg )
+init apiKey teamShortName =
+    \_ ->
+        ( Init
+        , Effect.batch
+            [ Time.now
+                |> Task.perform TimeReceived
+                |> Effect.sendCmd
+            , Api.getTeam HentTeamResponse apiKey teamShortName
+            ]
+        )
 
 
 page : Shared.Model -> Route { team : String } -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init shared.apiKey route.params.team
         , update = update
         , subscriptions = always Sub.none
         , view = view

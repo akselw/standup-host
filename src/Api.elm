@@ -3,21 +3,39 @@ module Api exposing (getTeam)
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Http
+import Json.Decode exposing (Decoder)
 import Team exposing (Team)
 import Url.Builder as Url
 
 
-getTeam : DatabaseApiToken -> String -> (Result Http.Error Team -> msg) -> Effect msg
-getTeam apiKey teamShortName msg =
+getTeam : (Result Http.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
+getTeam msg apiKey teamShortName =
     getFromDatabase
         { apiKey = apiKey
         , table = "team"
         , query =
-            [ Url.string "shortname" teamShortName
-            , Url.string "select" "navn,id,debatt(navn)"
+            [ Url.string "shortname" ("eq." ++ teamShortName)
+            , Url.string "select" "navn,id,shortname"
             ]
-        , expect = Http.expectJson msg Team.decoder
+        , expect = Http.expectJson msg (listToSingleElementDecoder Team.decoder)
         }
+
+
+listToSingleElementDecoder : Decoder a -> Decoder a
+listToSingleElementDecoder decoder =
+    Json.Decode.list decoder
+        |> Json.Decode.andThen
+            (\decodedList ->
+                case decodedList of
+                    singleElement :: [] ->
+                        Json.Decode.succeed singleElement
+
+                    [] ->
+                        Json.Decode.fail "Listen returnerte ingen elementer"
+
+                    _ ->
+                        Json.Decode.fail "Listen returnerte flere enn ett element"
+            )
 
 
 getFromDatabase :
