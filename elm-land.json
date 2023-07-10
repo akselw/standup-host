@@ -4,7 +4,7 @@
       "development": { "debugger": true },
       "production": { "debugger": false }
     },
-    "env": [],
+    "env": ["SUPABASE_API_KEY"],
     "html": {
       "attributes": {
         "html": { "lang": "en" },
