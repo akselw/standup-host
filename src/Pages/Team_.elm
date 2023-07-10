@@ -1,15 +1,19 @@
-module Pages.Team exposing (Model, Msg, init, main, update, view)
+module Pages.Team_ exposing (Model, Msg, page)
 
-import Browser
 import Dato exposing (Dato)
+import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, type_)
 import Html.Events exposing (onClick)
+import Page exposing (Page)
 import Process
 import Random
 import Random.List
+import Route exposing (Route)
+import Shared
 import Task
 import Time exposing (Month(..), Posix)
+import View exposing (View)
 
 
 
@@ -71,7 +75,7 @@ type Msg
     | AnimationTick
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
         TimeReceived posix ->
@@ -95,60 +99,62 @@ update msg model =
                 , valgtDag = Idag
                 , morgendagensAnimationState = IkkeVisNoe
                 }
-            , Cmd.none
+            , Effect.none
             )
 
         VelgNyPersonIDag ->
             case model of
                 Init ->
-                    ( model, Cmd.none )
+                    ( model, Effect.none )
 
                 Success record ->
                     case record.dagensRekkefølge of
                         _ :: rest ->
-                            ( Success { record | dagensRekkefølge = rest }, Cmd.none )
+                            ( Success { record | dagensRekkefølge = rest }, Effect.none )
 
                         [] ->
-                            ( model, Cmd.none )
+                            ( model, Effect.none )
 
         VelgNyPersonNesteArbeidsdag ->
             case model of
                 Init ->
-                    ( model, Cmd.none )
+                    ( model, Effect.none )
 
                 Success record ->
                     case record.morgensdagensRekkefølge of
                         _ :: rest ->
-                            ( Success { record | morgensdagensRekkefølge = rest }, Cmd.none )
+                            ( Success { record | morgensdagensRekkefølge = rest }, Effect.none )
 
                         [] ->
-                            ( model, Cmd.none )
+                            ( model, Effect.none )
 
         EndreFane valgtDag ->
             case model of
                 Init ->
-                    ( model, Cmd.none )
+                    ( model, Effect.none )
 
                 Success modelInfo ->
                     ( Success { modelInfo | valgtDag = valgtDag }
                     , Process.sleep 500
                         |> Task.perform (\_ -> AnimationTick)
+                        |> Effect.sendCmd
                     )
 
         AnimationTick ->
             case model of
                 Init ->
-                    ( model, Cmd.none )
+                    ( model, Effect.none )
 
                 Success modelInfo ->
                     ( Success { modelInfo | morgendagensAnimationState = nesteAnimationState modelInfo.morgendagensAnimationState }
                     , case nesteAnimationState modelInfo.morgendagensAnimationState of
                         VisAlt ->
-                            Cmd.none
+                            Effect.none
 
                         _ ->
                             Process.sleep 1000
                                 |> Task.perform (\_ -> AnimationTick)
+                                |> Effect.sendCmd
                     )
 
 
@@ -178,12 +184,16 @@ nesteAnimationState animationState =
 --- VIEW ---
 
 
-view : Model -> Html Msg
+view : Model -> View Msg
 view model =
-    div [ class "wrapper" ]
-        [ div [ class "standup-host" ]
-            (viewContent model)
+    { title = "Pages.Team_"
+    , body =
+        [ div [ class "wrapper" ]
+            [ div [ class "standup-host" ]
+                (viewContent model)
+            ]
         ]
+    }
 
 
 viewContent : Model -> List (Html Msg)
@@ -305,18 +315,20 @@ viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
 --- MAIN ---
 
 
-init : () -> ( Model, Cmd Msg )
+init : () -> ( Model, Effect Msg )
 init _ =
     ( Init
     , Time.now
         |> Task.perform TimeReceived
+        |> Effect.sendCmd
     )
 
 
-main =
-    Browser.element
+page : Shared.Model -> Route { team : String } -> Page Model Msg
+page shared route =
+    Page.new
         { init = init
         , update = update
-        , view = view
         , subscriptions = always Sub.none
+        , view = view
         }
