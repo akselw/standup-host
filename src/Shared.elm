@@ -17,7 +17,6 @@ import Effect exposing (Effect)
 import Json.Decode
 import Json.Decode.Pipeline exposing (required)
 import Route exposing (Route)
-import Route.Path
 import Shared.Model
 import Shared.Msg
 
