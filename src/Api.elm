@@ -1,4 +1,4 @@
-module Api exposing (getTeam)
+module Api exposing (getTeam2)
 
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
@@ -8,16 +8,30 @@ import Team exposing (Team)
 import Url.Builder as Url
 
 
-getTeam : (Result Http.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
-getTeam msg apiKey teamShortName =
+
+--getTeam : (Result Http.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
+--getTeam msg apiKey teamShortName =
+--    getFromDatabase
+--        { apiKey = apiKey
+--        , table = "team"
+--        , query =
+--            [ Url.string "shortname" ("eq." ++ teamShortName)
+--            , Url.string "select" "navn,id,shortname"
+--            ]
+--        , expect = Http.expectJson msg (listToSingleElementDecoder Team.decoder)
+--        }
+
+
+getTeam2 : (Result Http.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
+getTeam2 msg apiKey teamShortName =
     getFromDatabase
         { apiKey = apiKey
-        , table = "team"
+        , table = "teammedlem"
         , query =
-            [ Url.string "shortname" ("eq." ++ teamShortName)
-            , Url.string "select" "navn,id,shortname"
+            [ Url.string "team.shortname" ("eq." ++ teamShortName)
+            , Url.string "select" "navn,team(shortname,navn)"
             ]
-        , expect = Http.expectJson msg (listToSingleElementDecoder Team.decoder)
+        , expect = Http.expectJson msg Team.decoder
         }
 
 

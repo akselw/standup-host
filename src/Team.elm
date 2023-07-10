@@ -1,7 +1,7 @@
 module Team exposing (Team, decoder)
 
 import Json.Decode exposing (Decoder, succeed)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (required, requiredAt)
 
 
 type Team
@@ -11,12 +11,44 @@ type Team
 type alias TeamInfo =
     { navn : String
     , shortname : String
+    , medlemmer : List String
+    }
+
+
+type alias BackendDataTeammedlem =
+    { navn : String
+    , teamNavn : String
+    , teamShortname : String
     }
 
 
 decoder : Decoder Team
 decoder =
-    succeed TeamInfo
+    Json.Decode.list decoderBackendData
+        |> Json.Decode.andThen backendDataToTeam
+
+
+decoderBackendData : Decoder BackendDataTeammedlem
+decoderBackendData =
+    succeed BackendDataTeammedlem
         |> required "navn" Json.Decode.string
-        |> required "shortname" Json.Decode.string
-        |> Json.Decode.map Team
+        |> requiredAt [ "team", "navn" ] Json.Decode.string
+        |> requiredAt [ "team", "shortname" ] Json.Decode.string
+
+
+backendDataToTeam : List BackendDataTeammedlem -> Decoder Team
+backendDataToTeam teammedlemmer =
+    case teammedlemmer of
+        first :: _ ->
+            Json.Decode.succeed
+                (Team
+                    { navn = first.teamNavn
+                    , shortname = first.teamShortname
+                    , medlemmer = List.map .navn teammedlemmer
+                    }
+                )
+
+        _ ->
+            -- TODO: Hva om et team ikke har teammedlemmer ennå?
+            -- Kanskje to API-kall, som chaines med Task?
+            Json.Decode.fail "Team har ingen teammedlemmer"
