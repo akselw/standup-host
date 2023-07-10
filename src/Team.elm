@@ -62,7 +62,9 @@ backendDataToTeam teammedlemmer =
                 (Team
                     { navn = first.teamNavn
                     , shortname = first.teamShortname
-                    , medlemmer = List.map .navn teammedlemmer
+                    , medlemmer =
+                        List.map .navn teammedlemmer
+                            |> List.sort
                     }
                 )
 
