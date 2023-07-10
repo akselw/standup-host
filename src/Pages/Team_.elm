@@ -35,36 +35,21 @@ type AnimationState
 
 type Model
     = Init
+    | LoadingTeam Dato
+    | Failure Http.Error
     | Success
         { dagensDato : Dato
         , dagensRekkefølge : List String
         , morgensdagensRekkefølge : List String
         , morgendagensAnimationState : AnimationState
         , valgtDag : ValgtDag
+        , team : Team
         }
 
 
 type ValgtDag
     = Idag
     | NesteArbeidsdag
-
-
-teamBruke : List String
-teamBruke =
-    [ "Andrew"
-    , "Arild"
-    , "Arnstein"
-    , "Ingunn"
-    , "Lars-Petter"
-    , "Maren"
-    , "Martin"
-    , "Mia"
-    , "Nga"
-    , "Ola"
-    , "Sjoffa"
-    , "Svein Roar"
-    , "Tormod"
-    ]
 
 
 
@@ -88,30 +73,41 @@ update msg model =
                 dato =
                     Dato.fromPosix posix
             in
-            ( Success
-                { dagensDato = dato
-                , dagensRekkefølge =
-                    dato
-                        |> Dato.toSeed
-                        |> Random.step (Random.List.shuffle teamBruke)
-                        |> Tuple.first
-                , morgensdagensRekkefølge =
-                    dato
-                        |> Dato.nesteArbeidsdag
-                        |> Dato.toSeed
-                        |> Random.step (Random.List.shuffle teamBruke)
-                        |> Tuple.first
-                , valgtDag = Idag
-                , morgendagensAnimationState = IkkeVisNoe
-                }
-            , Effect.none
-            )
+            ( LoadingTeam dato, Effect.none )
+
+        HentTeamResponse result ->
+            case model of
+                LoadingTeam dato ->
+                    case result of
+                        Ok team ->
+                            ( Success
+                                { dagensDato = dato
+                                , dagensRekkefølge =
+                                    dato
+                                        |> Dato.toSeed
+                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
+                                        |> Tuple.first
+                                , morgensdagensRekkefølge =
+                                    dato
+                                        |> Dato.nesteArbeidsdag
+                                        |> Dato.toSeed
+                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
+                                        |> Tuple.first
+                                , valgtDag = Idag
+                                , morgendagensAnimationState = IkkeVisNoe
+                                , team = team
+                                }
+                            , Effect.none
+                            )
+
+                        Err error ->
+                            ( Failure error, Effect.none )
+
+                _ ->
+                    ( model, Effect.none )
 
         VelgNyPersonIDag ->
             case model of
-                Init ->
-                    ( model, Effect.none )
-
                 Success record ->
                     case record.dagensRekkefølge of
                         _ :: rest ->
@@ -120,11 +116,11 @@ update msg model =
                         [] ->
                             ( model, Effect.none )
 
-        VelgNyPersonNesteArbeidsdag ->
-            case model of
-                Init ->
+                _ ->
                     ( model, Effect.none )
 
+        VelgNyPersonNesteArbeidsdag ->
+            case model of
                 Success record ->
                     case record.morgensdagensRekkefølge of
                         _ :: rest ->
@@ -133,11 +129,11 @@ update msg model =
                         [] ->
                             ( model, Effect.none )
 
-        EndreFane valgtDag ->
-            case model of
-                Init ->
+                _ ->
                     ( model, Effect.none )
 
+        EndreFane valgtDag ->
+            case model of
                 Success modelInfo ->
                     ( Success { modelInfo | valgtDag = valgtDag }
                     , Process.sleep 500
@@ -145,11 +141,11 @@ update msg model =
                         |> Effect.sendCmd
                     )
 
-        AnimationTick ->
-            case model of
-                Init ->
+                _ ->
                     ( model, Effect.none )
 
+        AnimationTick ->
+            case model of
                 Success modelInfo ->
                     ( Success { modelInfo | morgendagensAnimationState = nesteAnimationState modelInfo.morgendagensAnimationState }
                     , case nesteAnimationState modelInfo.morgendagensAnimationState of
@@ -162,8 +158,8 @@ update msg model =
                                 |> Effect.sendCmd
                     )
 
-        HentTeamResponse result ->
-            ( model, Effect.none )
+                _ ->
+                    ( model, Effect.none )
 
 
 nesteAnimationState : AnimationState -> AnimationState
@@ -207,9 +203,6 @@ view model =
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
-        Init ->
-            [ text "" ]
-
         Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag, morgendagensAnimationState } ->
             [ div []
                 [ button [ onClick (EndreFane Idag), type_ "button" ] [ text "I dag" ]
@@ -227,6 +220,9 @@ viewContent model =
                 NesteArbeidsdag ->
                     viewNesteVirkedag morgendagensAnimationState morgensdagensRekkefølge dagensDato
             ]
+
+        _ ->
+            [ text "" ]
 
 
 viewIdag : List String -> Dato -> Html Msg

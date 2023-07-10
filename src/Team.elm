@@ -1,4 +1,4 @@
-module Team exposing (Team, decoder)
+module Team exposing (Team, decoder, medlemmer, navn)
 
 import Json.Decode exposing (Decoder, succeed)
 import Json.Decode.Pipeline exposing (required, requiredAt)
@@ -13,6 +13,24 @@ type alias TeamInfo =
     , shortname : String
     , medlemmer : List String
     }
+
+
+
+--- FELTER ---
+
+
+navn : Team -> String
+navn (Team team) =
+    team.navn
+
+
+medlemmer : Team -> List String
+medlemmer (Team team) =
+    team.medlemmer
+
+
+
+--- DECODING ---
 
 
 type alias BackendDataTeammedlem =
