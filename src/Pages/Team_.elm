@@ -327,7 +327,7 @@ init apiKey teamShortName =
             [ Time.now
                 |> Task.perform TimeReceived
                 |> Effect.sendCmd
-            , Api.getTeam2 HentTeamResponse apiKey teamShortName
+            , Api.getTeam HentTeamResponse apiKey teamShortName
             ]
         )
 
