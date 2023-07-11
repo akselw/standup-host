@@ -1,7 +1,7 @@
 module Pages.Home_ exposing (..)
 
 import Effect exposing (Effect)
-import Html
+import Html.Styled as Html
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared

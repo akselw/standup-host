@@ -1,12 +1,13 @@
 module Pages.Team_ exposing (Model, Msg, page)
 
 import Api
+import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Dato exposing (Dato)
 import Effect exposing (Effect)
-import Html exposing (..)
-import Html.Attributes exposing (class, classList, type_)
-import Html.Events exposing (onClick)
+import Html.Styled exposing (..)
+import Html.Styled.Attributes as Attributes exposing (class, classList, type_)
+import Html.Styled.Events exposing (onClick)
 import Http
 import Page exposing (Page)
 import Process
@@ -285,9 +286,13 @@ elementSkalVises animationState element =
             False
 
 
-animationClasses : AnimationState -> AnimationElememt -> Html.Attribute msg
+animationClasses : AnimationState -> AnimationElememt -> Css.Style
 animationClasses animationState element =
-    classList [ ( "fade-in", True ), ( "fade-in-hidden", not (elementSkalVises animationState element) ) ]
+    if elementSkalVises animationState element then
+        Css.batch []
+
+    else
+        Css.opacity Css.zero
 
 
 viewNesteVirkedag : AnimationState -> List String -> Dato -> Html Msg
@@ -296,15 +301,15 @@ viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
         Just standupVert ->
             div [ class "wrapper" ]
                 [ div [ class "standup-host" ]
-                    [ p [ animationClasses animationState FørsteSetning ]
+                    [ p [ Attributes.css [ animationClasses animationState FørsteSetning ] ]
                         [ text ("Den som skal holde standup på " ++ String.toLower (Dato.toUkedagString (Dato.nesteArbeidsdag dagensDato)))
                         ]
-                    , p [ animationClasses animationState AndreSetning ]
+                    , p [ Attributes.css [ animationClasses animationState AndreSetning ] ]
                         [ text "er" ]
-                    , h1 [ animationClasses animationState StandupVert ]
+                    , h1 [ Attributes.css [ animationClasses animationState StandupVert ] ]
                         [ text standupVert ]
                     , button
-                        [ animationClasses animationState NesteKnapp
+                        [ Attributes.css [ animationClasses animationState NesteKnapp ]
                         , onClick VelgNyPersonNesteArbeidsdag
                         ]
                         [ text (standupVert ++ " kan ikke") ]
