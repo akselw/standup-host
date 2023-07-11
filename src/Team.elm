@@ -1,7 +1,17 @@
-module Team exposing (Team, addMedlemmer, decoder, id, medlemmer, navn, teammedlemmerDecoder)
+module Team exposing
+    ( BackendTeam
+    , BackendTeammedlemmer
+    , Team
+    , fromBackendTypes
+    , id
+    , medlemmer
+    , navn
+    , teamDecoder
+    , teammedlemmerDecoder
+    )
 
-import Json.Decode exposing (Decoder, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, required, requiredAt)
+import Json.Decode exposing (Decoder)
+import Json.Decode.Pipeline exposing (required)
 
 
 type Team
@@ -11,9 +21,17 @@ type Team
 type alias TeamInfo =
     { navn : String
     , shortname : String
-    , id : String
     , medlemmer : List String
     }
+
+
+fromBackendTypes : BackendTeam -> BackendTeammedlemmer -> Team
+fromBackendTypes (BackendTeam team) (BackendTeammedlemmer teammedlemmer) =
+    Team
+        { navn = team.navn
+        , shortname = team.shortname
+        , medlemmer = teammedlemmer
+        }
 
 
 
@@ -30,27 +48,34 @@ medlemmer (Team team) =
     team.medlemmer
 
 
-id : Team -> String
-id (Team team) =
+id : BackendTeam -> String
+id (BackendTeam team) =
     team.id
-
-
-
---- TODO: Endre dette ---
-
-
-addMedlemmer : Team -> List String -> Team
-addMedlemmer (Team team) medlemliste =
-    Team { team | medlemmer = medlemliste }
 
 
 
 --- DECODING ---
 
 
-teammedlemmerDecoder : Decoder (List String)
+type BackendTeam
+    = BackendTeam BackendTeamInfo
+
+
+type alias BackendTeamInfo =
+    { navn : String
+    , shortname : String
+    , id : String
+    }
+
+
+type BackendTeammedlemmer
+    = BackendTeammedlemmer (List String)
+
+
+teammedlemmerDecoder : Decoder BackendTeammedlemmer
 teammedlemmerDecoder =
     Json.Decode.list (Json.Decode.field "navn" Json.Decode.string)
+        |> Json.Decode.map BackendTeammedlemmer
 
 
 type alias BackendDataTeammedlem =
@@ -60,47 +85,10 @@ type alias BackendDataTeammedlem =
     }
 
 
-decoder : Decoder Team
-decoder =
-    Json.Decode.succeed TeamInfo
+teamDecoder : Decoder BackendTeam
+teamDecoder =
+    Json.Decode.succeed BackendTeamInfo
         |> required "navn" Json.Decode.string
         |> required "shortname" Json.Decode.string
         |> required "id" Json.Decode.string
-        |> hardcoded []
-        |> Json.Decode.map Team
-
-
-
---
---decoder2 : Decoder Team
---decoder2 =
---    Json.Decode.list decoderBackendData
---        |> Json.Decode.andThen backendDataToTeam
---
---
---decoderBackendData : Decoder BackendDataTeammedlem
---decoderBackendData =
---    succeed BackendDataTeammedlem
---        |> required "navn" Json.Decode.string
---        |> requiredAt [ "team", "navn" ] Json.Decode.string
---        |> requiredAt [ "team", "shortname" ] Json.Decode.string
---
---
---backendDataToTeam : List BackendDataTeammedlem -> Decoder Team
---backendDataToTeam teammedlemmer =
---    case teammedlemmer of
---        first :: _ ->
---            Json.Decode.succeed
---                (Team
---                    { navn = first.teamNavn
---                    , shortname = first.teamShortname
---                    , medlemmer =
---                        List.map .navn teammedlemmer
---                            |> List.sort
---                    }
---                )
---
---        _ ->
---            -- TODO: Hva om et team ikke har teammedlemmer ennå?
---            -- Kanskje to API-kall, som chaines med Task?
---            Json.Decode.fail "Team har ingen teammedlemmer"
+        |> Json.Decode.map BackendTeam

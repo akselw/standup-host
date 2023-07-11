@@ -1,11 +1,11 @@
-module Api exposing (getTeam, getTeam2)
+module Api exposing (getTeam)
 
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
 import Task exposing (Task)
-import Team exposing (Team)
+import Team exposing (BackendTeam, Team)
 import Url.Builder as Url
 
 
@@ -18,14 +18,14 @@ getTeam msg apiKey teamShortName =
             [ Url.string "shortname" ("eq." ++ teamShortName)
             , Url.string "select" "navn,id,shortname"
             ]
-        , decoder = listToSingleElementDecoder Team.decoder
+        , decoder = listToSingleElementDecoder Team.teamDecoder
         }
         |> Task.andThen (getTeammedlemmer apiKey)
         |> Task.attempt msg
         |> Effect.sendCmd
 
 
-getTeammedlemmer : DatabaseApiToken -> Team -> Task Http.Error Team
+getTeammedlemmer : DatabaseApiToken -> BackendTeam -> Task Http.Error Team
 getTeammedlemmer apiKey team =
     getFromDatabaseTask
         { apiKey = apiKey
@@ -36,20 +36,7 @@ getTeammedlemmer apiKey team =
             ]
         , decoder =
             Team.teammedlemmerDecoder
-                |> Json.Decode.map (Team.addMedlemmer team)
-        }
-
-
-getTeam2 : (Result Http.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
-getTeam2 msg apiKey teamShortName =
-    getFromDatabase
-        { apiKey = apiKey
-        , table = "teammedlem"
-        , query =
-            [ Url.string "team.shortname" ("eq." ++ teamShortName)
-            , Url.string "select" "navn,team(shortname,navn)"
-            ]
-        , expect = Http.expectJson msg Team.decoder
+                |> Json.Decode.map (Team.fromBackendTypes team)
         }
 
 
