@@ -193,10 +193,18 @@ view : Model -> View Msg
 view model =
     { title = "Pages.Team_"
     , body =
-        [ div [ class "wrapper" ]
-            [ div [ class "standup-host" ]
-                (viewContent model)
+        [ div
+            [ Attributes.css
+                [ Css.displayFlex
+                , Css.flexDirection Css.column
+                , Css.fontFamilies [ "Open Sans", "sans-serif" ]
+                , Css.fontSize (Css.px 14)
+                , Css.width (Css.pct 100)
+                , Css.color (Css.rgb 51 51 51)
+                , Css.alignItems Css.center
+                ]
             ]
+            (viewContent model)
         ]
     }
 
@@ -230,14 +238,18 @@ viewIdag : List String -> Dato -> Html Msg
 viewIdag rekkefølge dagensDato =
     case List.head rekkefølge of
         Just standupVert ->
-            div [ class "wrapper" ]
-                [ div [ class "standup-host" ]
-                    [ h1 [] [ text standupVert ]
-                    , p [] [ text ("skal holde standup i dag, " ++ String.toLower (Dato.toUkedagString dagensDato) ++ " " ++ Dato.toString dagensDato ++ ".") ]
-                    , button
-                        [ onClick VelgNyPersonIDag ]
-                        [ text (standupVert ++ " kan ikke") ]
+            div
+                [ Attributes.css
+                    [ Css.displayFlex
+                    , Css.flexDirection Css.column
+                    , Css.alignItems Css.center
                     ]
+                ]
+                [ h1 [] [ text standupVert ]
+                , p [] [ text ("skal holde standup i dag, " ++ String.toLower (Dato.toUkedagString dagensDato) ++ " " ++ Dato.toString dagensDato ++ ".") ]
+                , button
+                    [ onClick VelgNyPersonIDag ]
+                    [ text (standupVert ++ " kan ikke") ]
                 ]
 
         Nothing ->
@@ -299,21 +311,25 @@ viewNesteVirkedag : AnimationState -> List String -> Dato -> Html Msg
 viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
     case List.head nesteVirkedagsRekkefølge of
         Just standupVert ->
-            div [ class "wrapper" ]
-                [ div [ class "standup-host" ]
-                    [ p [ Attributes.css [ animationClasses animationState FørsteSetning ] ]
-                        [ text ("Den som skal holde standup på " ++ String.toLower (Dato.toUkedagString (Dato.nesteArbeidsdag dagensDato)))
-                        ]
-                    , p [ Attributes.css [ animationClasses animationState AndreSetning ] ]
-                        [ text "er" ]
-                    , h1 [ Attributes.css [ animationClasses animationState StandupVert ] ]
-                        [ text standupVert ]
-                    , button
-                        [ Attributes.css [ animationClasses animationState NesteKnapp ]
-                        , onClick VelgNyPersonNesteArbeidsdag
-                        ]
-                        [ text (standupVert ++ " kan ikke") ]
+            div
+                [ Attributes.css
+                    [ Css.displayFlex
+                    , Css.flexDirection Css.column
+                    , Css.alignItems Css.center
                     ]
+                ]
+                [ p [ Attributes.css [ animationClasses animationState FørsteSetning ] ]
+                    [ text ("Den som skal holde standup på " ++ String.toLower (Dato.toUkedagString (Dato.nesteArbeidsdag dagensDato)))
+                    ]
+                , p [ Attributes.css [ animationClasses animationState AndreSetning ] ]
+                    [ text "er" ]
+                , h1 [ Attributes.css [ animationClasses animationState StandupVert ] ]
+                    [ text standupVert ]
+                , button
+                    [ Attributes.css [ animationClasses animationState NesteKnapp ]
+                    , onClick VelgNyPersonNesteArbeidsdag
+                    ]
+                    [ text (standupVert ++ " kan ikke") ]
                 ]
 
         Nothing ->
