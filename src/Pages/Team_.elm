@@ -37,7 +37,7 @@ type AnimationState
 type Model
     = Init
     | LoadingTeam Dato
-    | Failure Http.Error
+    | Failure Team.Error
     | Success
         { dagensDato : Dato
         , dagensRekkefølge : List String
@@ -62,7 +62,7 @@ type Msg
     | VelgNyPersonIDag
     | VelgNyPersonNesteArbeidsdag
     | EndreFane ValgtDag
-    | HentTeamResponse (Result Http.Error Team)
+    | HentTeamResponse (Result Team.Error Team)
     | AnimationTick
 
 

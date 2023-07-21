@@ -9,7 +9,7 @@ import Team exposing (BackendTeam, Team)
 import Url.Builder as Url
 
 
-getTeam : (Result Http.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
+getTeam : (Result Team.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
 getTeam msg apiKey teamShortName =
     getFromDatabaseTask
         { apiKey = apiKey
@@ -18,39 +18,46 @@ getTeam msg apiKey teamShortName =
             [ Url.string "shortname" ("eq." ++ teamShortName)
             , Url.string "select" "navn,id,shortname"
             ]
-        , decoder = listToSingleElementDecoder Team.teamDecoder
+        , decoder = decodeTeamFromList
         }
+        |> Task.mapError Team.HttpErrorForTeam
         |> Task.andThen (getTeammedlemmer apiKey)
         |> Task.attempt msg
         |> Effect.sendCmd
 
 
-getTeammedlemmer : DatabaseApiToken -> BackendTeam -> Task Http.Error Team
-getTeammedlemmer apiKey team =
-    getFromDatabaseTask
-        { apiKey = apiKey
-        , table = "teammedlem"
-        , query =
-            [ Url.string "team_id" ("eq." ++ Team.id team)
-            , Url.string "select" "navn"
-            ]
-        , decoder =
-            Team.teammedlemmerDecoder
-                |> Json.Decode.map (Team.fromBackendTypes team)
-        }
+getTeammedlemmer : DatabaseApiToken -> Result Team.Error BackendTeam -> Task Team.Error Team
+getTeammedlemmer apiKey teamResult =
+    case teamResult of
+        Ok team ->
+            getFromDatabaseTask
+                { apiKey = apiKey
+                , table = "teammedlem"
+                , query =
+                    [ Url.string "team_id" ("eq." ++ Team.id team)
+                    , Url.string "select" "navn"
+                    ]
+                , decoder =
+                    Team.teammedlemmerDecoder
+                        |> Json.Decode.map (Team.fromBackendTypes team)
+                }
+                |> Task.mapError Team.HttpErrorForTeammedlemmer
+
+        Err error ->
+            Task.fail error
 
 
-listToSingleElementDecoder : Decoder a -> Decoder a
-listToSingleElementDecoder decoder =
-    Json.Decode.list decoder
+decodeTeamFromList : Decoder (Result Team.Error BackendTeam)
+decodeTeamFromList =
+    Json.Decode.list Team.teamDecoder
         |> Json.Decode.andThen
             (\decodedList ->
                 case decodedList of
                     singleElement :: [] ->
-                        Json.Decode.succeed singleElement
+                        Json.Decode.succeed (Ok singleElement)
 
                     [] ->
-                        Json.Decode.fail "Listen returnerte ingen elementer"
+                        Json.Decode.succeed (Err Team.FantIkkeTeam)
 
                     _ ->
                         Json.Decode.fail "Listen returnerte flere enn ett element"

@@ -1,6 +1,7 @@
 module Team exposing
     ( BackendTeam
     , BackendTeammedlemmer
+    , Error(..)
     , Team
     , fromBackendTypes
     , id
@@ -10,6 +11,7 @@ module Team exposing
     , teammedlemmerDecoder
     )
 
+import Http
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 
@@ -35,7 +37,7 @@ fromBackendTypes (BackendTeam team) (BackendTeammedlemmer teammedlemmer) =
 
 
 
---- FELTER ---
+--- Felter ---
 
 
 navn : Team -> String
@@ -54,7 +56,18 @@ id (BackendTeam team) =
 
 
 
---- DECODING ---
+--- Error ---
+
+
+type Error
+    = FantIkkeTeam
+    | IngenTeammedlemmer
+    | HttpErrorForTeam Http.Error
+    | HttpErrorForTeammedlemmer Http.Error
+
+
+
+--- Decoding ---
 
 
 type BackendTeam
