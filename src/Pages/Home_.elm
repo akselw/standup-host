@@ -1,7 +1,9 @@
 module Pages.Home_ exposing (..)
 
+import Authentication
 import Effect exposing (Effect)
-import Html.Styled as Html
+import Html.Styled as Html exposing (..)
+import Html.Styled.Events exposing (onClick)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -38,15 +40,16 @@ init () =
 
 
 type Msg
-    = ExampleMsgReplaceMe
+    = LoginClicked
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        ExampleMsgReplaceMe ->
+        LoginClicked ->
             ( model
-            , Effect.none
+            , Authentication.login
+                |> Effect.sendCmd
             )
 
 
@@ -66,5 +69,5 @@ subscriptions model =
 view : Model -> View Msg
 view model =
     { title = "Pages.Home_"
-    , body = [ Html.text "/" ]
+    , body = [ button [ onClick LoginClicked ] [ text "Log in" ] ]
     }
