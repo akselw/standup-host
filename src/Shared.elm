@@ -71,8 +71,8 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
-        Shared.Msg.ExampleMsgReplaceMe ->
-            ( model
+        Shared.Msg.AccessTokenChanged accessToken ->
+            ( { model | accessToken = Just accessToken }
             , Effect.none
             )
 

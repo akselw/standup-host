@@ -51,9 +51,12 @@ init route () =
         Just accessToken ->
             ( {}
             , Effect.batch
-                [ -- TODO: Legg til lagring i shared model
-                  Effect.sendCmd (LocalStorage.setItem "hvem-har-standup:access_token" (Json.Encode.string accessToken))
+                [ Effect.sendCmd (LocalStorage.setItem "hvem-har-standup:access_token" (Json.Encode.string accessToken))
                 , Effect.replaceRoute { path = redirectPath, query = Dict.empty, hash = Nothing }
+
+                -- TODO: Dette fungerer bare fordi Effect.batch utføres siste først. Endre til at dett faktisk gjøres før replaceRoute kjører, på en eller annen måte
+                -- Kansje sett accessToken i init, og send en timeout command, som gjør at update gjør redirecten?
+                , Effect.updateAccessToken accessToken
                 ]
             )
 
