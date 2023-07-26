@@ -36,6 +36,13 @@ export const onReady = async ({ app, env }) => {
                 return
         }
     })
+    app.ports.localStorage.subscribe((action) => {
+        switch (action.type) {
+            case "SET_ITEM":
+                localStorage.setItem(action.key, action.value)
+                return
+        }
+    })
     // let { data, error } = await supabase.auth.signInWithOAuth({
     //     provider: 'github'
     //     , options: { redirectTo: 'http://localhost:1234/min-side'}

@@ -4,6 +4,8 @@ import Auth
 import Dict exposing (Dict)
 import Effect exposing (Effect)
 import Html
+import Json.Encode
+import LocalStorage
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path exposing (Path)
@@ -40,21 +42,24 @@ init route () =
         optionDict =
             route
                 |> hashQueryParamFromRoute
-                |> Dict.keys
-                |> Debug.log "route"
 
         redirectPath =
             queryRedirectToRoute route
                 -- TODO: Default burde være "min side"
                 |> Maybe.withDefault Route.Path.Home_
     in
-    ( {}
-    , Effect.batch
-        [ -- TODO: Legg til lagring i shared model
-          -- TODO: Legg til lagring i localstorage
-          Effect.replaceRoute { path = redirectPath, query = Dict.empty, hash = Nothing }
-        ]
-    )
+    case Dict.get "access_token" optionDict of
+        Just accessToken ->
+            ( {}
+            , Effect.batch
+                [ -- TODO: Legg til lagring i shared model
+                  Effect.sendCmd (LocalStorage.setItem "hvem-har-standup:access_token" (Json.Encode.string accessToken))
+                , Effect.replaceRoute { path = redirectPath, query = Dict.empty, hash = Nothing }
+                ]
+            )
+
+        Nothing ->
+            ( {}, Effect.none )
 
 
 queryRedirectToRoute : Route () -> Maybe Path
