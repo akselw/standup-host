@@ -24,7 +24,11 @@ export const onReady = async ({ app, env }) => {
                 let { data, error } = await supabase.auth.signInWithOAuth({
                     provider: "github",
                     options: {
-                        redirectTo: "http://localhost:1234/oauth",
+                        redirectTo:
+                            "http://localhost:1234/oauth" +
+                            (action.redirectUrl
+                                ? `?redirect=${action.redirectUrl}`
+                                : ""),
                     },
                 })
                 return

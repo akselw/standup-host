@@ -6,6 +6,7 @@ import Html.Styled as Html exposing (..)
 import Html.Styled.Events exposing (onClick)
 import Page exposing (Page)
 import Route exposing (Route)
+import Route.Path
 import Shared
 import View exposing (View)
 
