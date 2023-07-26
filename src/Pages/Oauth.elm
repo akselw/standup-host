@@ -45,8 +45,7 @@ init route () =
 
         redirectPath =
             queryRedirectToRoute route
-                -- TODO: Default burde være "min side"
-                |> Maybe.withDefault Route.Path.Home_
+                |> Maybe.withDefault Route.Path.MinSide
     in
     case Dict.get "access_token" optionDict of
         Just accessToken ->
