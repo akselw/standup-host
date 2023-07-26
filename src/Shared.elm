@@ -27,6 +27,7 @@ import Shared.Msg
 
 type alias Flags =
     { apiKey : DatabaseApiToken
+    , accessToken : Maybe String
     }
 
 
@@ -34,6 +35,7 @@ decoder : Json.Decode.Decoder Flags
 decoder =
     Json.Decode.succeed Flags
         |> required "apiKey" DatabaseApiToken.decoder
+        |> required "accessToken" (Json.Decode.maybe Json.Decode.string)
 
 
 
@@ -48,7 +50,9 @@ init : Result Json.Decode.Error Flags -> Route () -> ( Model, Effect Msg )
 init flagsResult route =
     case flagsResult of
         Ok flags ->
-            ( { apiKey = flags.apiKey }
+            ( { apiKey = flags.apiKey
+              , accessToken = flags.accessToken
+              }
             , Effect.none
             )
 

@@ -12,4 +12,5 @@ own file, so they can be imported by `Effect.elm`
 -}
 type alias Model =
     { apiKey : DatabaseApiToken
+    , accessToken : Maybe String
     }

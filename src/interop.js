@@ -4,9 +4,10 @@ import { createClient } from "@supabase/supabase-js"
 //
 // The value returned here will be passed as flags
 // into your `Shared.init` function.
-export const flags = ({ env }) => {
-    return { apiKey: env.SUPABASE_API_KEY }
-}
+export const flags = ({ env }) => ({
+    apiKey: env.SUPABASE_API_KEY,
+    accessToken: localStorage.getItem("hvem-har-standup:access_token"),
+})
 
 // This is called AFTER your Elm app starts up
 //
@@ -39,6 +40,7 @@ export const onReady = async ({ app, env }) => {
     app.ports.localStorage.subscribe((action) => {
         switch (action.type) {
             case "SET_ITEM":
+                // TODO: Endre til at key her er en JS-const, samme som brukes i flags
                 localStorage.setItem(action.key, action.value)
                 return
         }
