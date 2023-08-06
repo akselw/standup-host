@@ -1,9 +1,11 @@
 module Pages.Login exposing (Model, Msg, page)
 
 import Authentication
+import Dict
 import Effect exposing (Effect)
 import Page exposing (Page)
 import Route exposing (Route)
+import Route.Path
 import Shared
 import View exposing (View)
 
@@ -11,7 +13,7 @@ import View exposing (View)
 page : Shared.Model -> Route () -> Page Model Msg
 page shared route =
     Page.new
-        { init = init
+        { init = init route
         , update = update
         , subscriptions = subscriptions
         , view = view
@@ -26,10 +28,14 @@ type alias Model =
     {}
 
 
-init : () -> ( Model, Effect Msg )
-init () =
+init : Route () -> () -> ( Model, Effect Msg )
+init route () =
     ( {}
-    , Authentication.login
+    , route.query
+        |> Dict.get Authentication.redirectKey
+        |> Maybe.andThen Route.Path.fromString
+        |> Maybe.map Authentication.loginWithRedirectUrl
+        |> Maybe.withDefault Authentication.login
         |> Effect.sendCmd
     )
 

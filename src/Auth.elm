@@ -1,6 +1,7 @@
 module Auth exposing (User, onPageLoad, viewLoadingPage)
 
 import Auth.Action
+import Authentication
 import Dict
 import Route exposing (Route)
 import Route.Path
@@ -22,10 +23,9 @@ onPageLoad shared route =
             Auth.Action.loadPageWithUser { accessToken = accessToken }
 
         Nothing ->
-            -- TODO: Redirect til login-side
             Auth.Action.pushRoute
-                { path = Route.Path.NotFound_
-                , query = Dict.empty
+                { path = Route.Path.Login
+                , query = Dict.fromList [ ( Authentication.redirectKey, Route.Path.toString route.path ) ]
                 , hash = Nothing
                 }
 

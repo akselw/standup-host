@@ -1,10 +1,15 @@
-port module Authentication exposing (login, loginWithRedirectUrl)
+port module Authentication exposing (login, loginWithRedirectUrl, redirectKey)
 
 import Json.Encode
 import Route.Path as Path exposing (Path)
 
 
 port authentication : Json.Encode.Value -> Cmd msg
+
+
+redirectKey : String
+redirectKey =
+    "redirect"
 
 
 login : Cmd msg
