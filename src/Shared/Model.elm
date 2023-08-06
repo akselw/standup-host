@@ -1,4 +1,4 @@
-module Shared.Model exposing (Model)
+module Shared.Model exposing (AccessTokenStatus(..), Model)
 
 import DatabaseApiToken exposing (DatabaseApiToken)
 
@@ -12,5 +12,11 @@ own file, so they can be imported by `Effect.elm`
 -}
 type alias Model =
     { apiKey : DatabaseApiToken
-    , accessToken : Maybe String
+    , accessToken : AccessTokenStatus
     }
+
+
+type AccessTokenStatus
+    = CheckingToken
+    | Token String
+    | NoToken
