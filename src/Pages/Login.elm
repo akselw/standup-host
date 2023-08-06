@@ -1,11 +1,9 @@
-module Pages.Home_ exposing (..)
+module Pages.Login exposing (Model, Msg, page)
 
+import Authentication
 import Effect exposing (Effect)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attributes
 import Page exposing (Page)
 import Route exposing (Route)
-import Route.Path
 import Shared
 import View exposing (View)
 
@@ -31,7 +29,8 @@ type alias Model =
 init : () -> ( Model, Effect Msg )
 init () =
     ( {}
-    , Effect.none
+    , Authentication.login
+        |> Effect.sendCmd
     )
 
 
@@ -40,14 +39,16 @@ init () =
 
 
 type Msg
-    = NoMsg
+    = ExampleMsgReplaceMe
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        NoMsg ->
-            ( Model, Effect.none )
+        ExampleMsgReplaceMe ->
+            ( model
+            , Effect.none
+            )
 
 
 
@@ -65,6 +66,4 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Pages.Home_"
-    , body = [ a [ Route.Path.href Route.Path.Login |> Attributes.fromUnstyled ] [ text "Log in" ] ]
-    }
+    View.fromString "Pages.Login"
