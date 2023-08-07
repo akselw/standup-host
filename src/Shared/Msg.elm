@@ -2,6 +2,7 @@ module Shared.Msg exposing (Msg(..))
 
 {-| -}
 
+import Authentication
 import Jwt
 
 
@@ -14,4 +15,4 @@ own file, so they can be imported by `Effect.elm`
 -}
 type Msg
     = AccessTokenChanged String
-    | AccessTokenExpiredChecked String (Result Jwt.JwtError Bool)
+    | AccessTokenExpiredChecked (Result Jwt.JwtError Authentication.AccessTokenStatus)

@@ -12,6 +12,7 @@ module Shared exposing
 
 -}
 
+import Authentication
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Json.Decode
@@ -58,8 +59,7 @@ init flagsResult route =
                       , accessToken = CheckingToken
                       }
                     , accessToken
-                        |> Jwt.checkTokenExpiry
-                        |> Task.attempt (AccessTokenExpiredChecked accessToken)
+                        |> Authentication.checkAccessToken AccessTokenExpiredChecked
                         |> Effect.sendCmd
                     )
 
@@ -90,12 +90,12 @@ update route msg model =
             , Effect.none
             )
 
-        AccessTokenExpiredChecked accessToken (Ok False) ->
+        AccessTokenExpiredChecked (Ok (Authentication.ValidToken accessToken)) ->
             ( { model | accessToken = Token accessToken }
             , Effect.none
             )
 
-        AccessTokenExpiredChecked _ _ ->
+        AccessTokenExpiredChecked _ ->
             ( { model | accessToken = NoToken }
             , Effect.none
             )
