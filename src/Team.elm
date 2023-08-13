@@ -24,7 +24,14 @@ type alias TeamInfo =
     { navn : String
     , shortname : String
     , medlemmer : List String
+    , rotationLength : RotationLength
+    , properRandom : Bool
     }
+
+
+type RotationLength
+    = Daily
+    | Weekly
 
 
 fromBackendTypes : BackendTeam -> BackendTeammedlemmer -> Team
@@ -33,6 +40,8 @@ fromBackendTypes (BackendTeam team) (BackendTeammedlemmer teammedlemmer) =
         { navn = team.navn
         , shortname = team.shortname
         , medlemmer = teammedlemmer
+        , rotationLength = team.rotationLength
+        , properRandom = team.properRandom
         }
 
 
@@ -78,6 +87,8 @@ type alias BackendTeamInfo =
     { navn : String
     , shortname : String
     , id : String
+    , rotationLength : RotationLength
+    , properRandom : Bool
     }
 
 
@@ -104,4 +115,23 @@ teamDecoder =
         |> required "name" Json.Decode.string
         |> required "shortname" Json.Decode.string
         |> required "id" Json.Decode.string
+        |> required "rotation_length" rotationLengthDecoder
+        |> required "proper_random" Json.Decode.bool
         |> Json.Decode.map BackendTeam
+
+
+rotationLengthDecoder : Decoder RotationLength
+rotationLengthDecoder =
+    Json.Decode.string
+        |> Json.Decode.andThen
+            (\rotationLength ->
+                case rotationLength of
+                    "DAILY" ->
+                        Json.Decode.succeed Daily
+
+                    "WEEKLY" ->
+                        Json.Decode.succeed Weekly
+
+                    _ ->
+                        Json.Decode.fail ("Klarte ikke å decode rotationLength med verdi: " ++ rotationLength)
+            )

@@ -16,7 +16,7 @@ getTeam msg apiKey teamShortName =
         , table = "team"
         , query =
             [ Url.string "shortname" ("eq." ++ teamShortName)
-            , Url.string "select" "name,id,shortname"
+            , Url.string "select" "name,id,shortname,rotation_length,proper_random"
             ]
         , decoder = decodeTeamFromList
         }
