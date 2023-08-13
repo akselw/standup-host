@@ -87,7 +87,7 @@ type BackendTeammedlemmer
 
 teammedlemmerDecoder : Decoder BackendTeammedlemmer
 teammedlemmerDecoder =
-    Json.Decode.list (Json.Decode.field "navn" Json.Decode.string)
+    Json.Decode.list (Json.Decode.field "name" Json.Decode.string)
         |> Json.Decode.map BackendTeammedlemmer
 
 
@@ -101,7 +101,7 @@ type alias BackendDataTeammedlem =
 teamDecoder : Decoder BackendTeam
 teamDecoder =
     Json.Decode.succeed BackendTeamInfo
-        |> required "navn" Json.Decode.string
+        |> required "name" Json.Decode.string
         |> required "shortname" Json.Decode.string
         |> required "id" Json.Decode.string
         |> Json.Decode.map BackendTeam

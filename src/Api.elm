@@ -16,7 +16,7 @@ getTeam msg apiKey teamShortName =
         , table = "team"
         , query =
             [ Url.string "shortname" ("eq." ++ teamShortName)
-            , Url.string "select" "navn,id,shortname"
+            , Url.string "select" "name,id,shortname"
             ]
         , decoder = decodeTeamFromList
         }
@@ -32,10 +32,10 @@ getTeammedlemmer apiKey teamResult =
         Ok team ->
             getFromDatabaseTask
                 { apiKey = apiKey
-                , table = "teammedlem"
+                , table = "team_member"
                 , query =
                     [ Url.string "team_id" ("eq." ++ Team.id team)
-                    , Url.string "select" "navn"
+                    , Url.string "select" "name"
                     ]
                 , decoder =
                     Team.teammedlemmerDecoder
