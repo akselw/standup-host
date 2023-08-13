@@ -1,9 +1,9 @@
-insert into public.team (id, navn, shortname)
-values ('479351d7-b553-4d4e-ae1f-c1538789afa4', 'Team Oppgjør', 'teamoppgjor'),
-       ('4ff22cd0-32ad-485e-8206-caa03952c280', 'Elm-faggruppa', 'elm-2022');
+insert into public.team (id, name, shortname, owner_id)
+values ('479351d7-b553-4d4e-ae1f-c1538789afa4', 'Team Oppgjør', 'teamoppgjor', '973015b8-fc47-4023-b9dd-959487a97422'),
+       ('4ff22cd0-32ad-485e-8206-caa03952c280', 'Elm-faggruppa', 'elm-2022', '973015b8-fc47-4023-b9dd-959487a97422');
 
 
-insert into public.teammedlem (id, team_id, navn)
+insert into public.team_member (id, team_id, name)
 values ('5e8c65df-9804-4659-ac85-14f29a333887', '479351d7-b553-4d4e-ae1f-c1538789afa4', 'Andrew'),
        ('ad8119e5-f70b-413f-8b18-e6c7b924edd2', '479351d7-b553-4d4e-ae1f-c1538789afa4', 'Arild'),
        ('f4cec9f8-9b4f-47aa-a035-ffd4046b97ef', '479351d7-b553-4d4e-ae1f-c1538789afa4', 'Arnstein'),

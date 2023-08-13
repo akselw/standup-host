@@ -1,18 +1,18 @@
-
 create table team
 (
-    id   uuid not null default uuid_generate_v4(),
-    navn text not null,
+    id        uuid not null default uuid_generate_v4(),
+    name      text not null,
     shortname text not null,
-    constraint unik_shortname unique (shortname),
+    owner_id  uuid not null references auth.users,
+    constraint unique_shortname unique (shortname),
     primary key (id)
 );
 
-create table teammedlem
+create table team_member
 (
-    id            uuid not null default uuid_generate_v4(),
-    team_id uuid  not null references team,
-    navn          text not null,
+    id      uuid not null default uuid_generate_v4(),
+    team_id uuid not null references team,
+    name    text not null,
     primary key (id)
 );
 
@@ -21,15 +21,35 @@ create table teammedlem
 alter table team
     enable row level security;
 
-alter table teammedlem
+alter table team_member
     enable row level security;
 
-create policy "Allow logged-in full access" on team for all using (auth.role() = 'authenticated');
-create policy "Allow logged-in full access" on teammedlem for all using (auth.role() = 'authenticated');
+CREATE POLICY "Allow-anon-team-read-access"
+    ON public.team
+    FOR SELECT USING (
+    true
+    );
 
-create policy "Allow anon read access" on team for select using (auth.role() = 'anon');
-create policy "Allow anon read access" on teammedlem for select using (auth.role() = 'anon');
+CREATE POLICY "Allow-anon-team_member-read-access"
+    ON public.team_member
+    FOR SELECT USING (
+    true
+    );
 
--- Send "previous data" on change
-alter table team replica identity full;
-alter table teammedlem replica identity full;
+CREATE POLICY "Allow-owner-team-full-access"
+    ON public.team
+    FOR ALL USING (
+        team.owner_id = auth.uid()
+    );
+
+CREATE POLICY "Allow-owner-team_member-full-access"
+    ON public.team_member
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1
+            FROM team
+            WHERE team.id = team_member.team_id
+            AND team.owner_id = auth.uid()
+        )
+    );
+
