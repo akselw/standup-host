@@ -13,12 +13,17 @@ type AccessToken
 
 init : String -> Maybe AccessToken
 init string =
-    Just
-        (AccessToken
-            { accessToken = string
-            , userId = "TODO"
-            }
-        )
+    case Jwt.decodeToken userIdDecoder string of
+        Ok userIdString ->
+            Just
+                (AccessToken
+                    { accessToken = string
+                    , userId = userIdString
+                    }
+                )
+
+        Err _ ->
+            Nothing
 
 
 
@@ -32,13 +37,7 @@ token (AccessToken accessToken) =
 
 userId : AccessToken -> String
 userId (AccessToken accessToken) =
-    case Jwt.decodeToken userIdDecoder accessToken.accessToken of
-        Ok userIdString ->
-            userIdString
-
-        Err error ->
-            -- TODO
-            Jwt.errorToString error
+    accessToken.userId
 
 
 userIdDecoder : Decoder String
