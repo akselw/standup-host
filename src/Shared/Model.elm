@@ -1,5 +1,6 @@
 module Shared.Model exposing (AccessTokenStatus(..), Model)
 
+import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
 
 
@@ -18,5 +19,5 @@ type alias Model =
 
 type AccessTokenStatus
     = CheckingToken
-    | Token String
+    | Token AccessToken
     | NoToken

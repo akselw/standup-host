@@ -1,5 +1,6 @@
 module Auth exposing (User, onPageLoad, viewLoadingPage)
 
+import AccessToken exposing (AccessToken)
 import Auth.Action
 import Authentication
 import Dict
@@ -11,7 +12,7 @@ import View exposing (View)
 
 
 type alias User =
-    { accessToken : String }
+    { accessToken : AccessToken }
 
 
 {-| Called before an auth-only page is loaded.

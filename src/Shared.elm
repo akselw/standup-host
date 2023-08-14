@@ -12,6 +12,7 @@ module Shared exposing
 
 -}
 
+import AccessToken
 import Authentication
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
@@ -54,14 +55,23 @@ init flagsResult route =
     case flagsResult of
         Ok flags ->
             case flags.accessToken of
-                Just accessToken ->
-                    ( { apiKey = flags.apiKey
-                      , accessToken = CheckingToken
-                      }
-                    , accessToken
-                        |> Authentication.checkAccessToken AccessTokenExpiredChecked
-                        |> Effect.sendCmd
-                    )
+                Just accessTokenString ->
+                    case AccessToken.init accessTokenString of
+                        Just accessToken ->
+                            ( { apiKey = flags.apiKey
+                              , accessToken = CheckingToken
+                              }
+                            , accessToken
+                                |> Authentication.checkAccessToken AccessTokenExpiredChecked
+                                |> Effect.sendCmd
+                            )
+
+                        Nothing ->
+                            ( { apiKey = flags.apiKey
+                              , accessToken = NoToken
+                              }
+                            , Effect.none
+                            )
 
                 Nothing ->
                     ( { apiKey = flags.apiKey
@@ -85,10 +95,15 @@ type alias Msg =
 update : Route () -> Msg -> Model -> ( Model, Effect Msg )
 update route msg model =
     case msg of
-        AccessTokenChanged accessToken ->
-            ( { model | accessToken = Token accessToken }
-            , Effect.none
-            )
+        AccessTokenChanged accessTokenString ->
+            case AccessToken.init accessTokenString of
+                Just accessToken ->
+                    ( { model | accessToken = Token accessToken }
+                    , Effect.none
+                    )
+
+                Nothing ->
+                    ( model, Effect.none )
 
         AccessTokenExpiredChecked (Ok (Authentication.ValidToken accessToken)) ->
             ( { model | accessToken = Token accessToken }

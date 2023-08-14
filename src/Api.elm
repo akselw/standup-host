@@ -1,5 +1,6 @@
-module Api exposing (getTeam)
+module Api exposing (getTeam, getTeamsForUser)
 
+import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Http
@@ -62,6 +63,19 @@ decodeTeamFromList =
                     _ ->
                         Json.Decode.fail "Listen returnerte flere enn ett element"
             )
+
+
+getTeamsForUser : (Result Http.Error (List BackendTeam) -> msg) -> DatabaseApiToken -> AccessToken -> Effect msg
+getTeamsForUser msg apiKey accessToken =
+    getFromDatabase
+        { apiKey = apiKey
+        , table = "team"
+        , query =
+            [ Url.string "owner_id" ("eq." ++ AccessToken.userId accessToken)
+            , Url.string "select" "name, shortname"
+            ]
+        , expect = Http.expectJson msg (Json.Decode.list Team.teamDecoder)
+        }
 
 
 getFromDatabase :
