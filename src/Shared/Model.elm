@@ -1,4 +1,4 @@
-module Shared.Model exposing (AccessTokenStatus(..), Model)
+module Shared.Model exposing (AccessTokenStatus(..), Model, accessToken)
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -15,6 +15,16 @@ type alias Model =
     { apiKey : DatabaseApiToken
     , accessToken : AccessTokenStatus
     }
+
+
+accessToken : Model -> Maybe AccessToken
+accessToken model =
+    case model.accessToken of
+        Token accessToken_ ->
+            Just accessToken_
+
+        _ ->
+            Nothing
 
 
 type AccessTokenStatus
