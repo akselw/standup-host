@@ -14,6 +14,7 @@ module Team exposing
 import Http
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
+import RotationLength exposing (RotationLength)
 
 
 type Team
@@ -27,11 +28,6 @@ type alias TeamInfo =
     , rotationLength : RotationLength
     , properRandom : Bool
     }
-
-
-type RotationLength
-    = Daily
-    | Weekly
 
 
 fromBackendTypes : BackendTeam -> BackendTeammedlemmer -> Team
@@ -115,23 +111,6 @@ teamDecoder =
         |> required "name" Json.Decode.string
         |> required "shortname" Json.Decode.string
         |> required "id" Json.Decode.string
-        |> required "rotation_length" rotationLengthDecoder
+        |> required "rotation_length" RotationLength.decoder
         |> required "proper_random" Json.Decode.bool
         |> Json.Decode.map BackendTeam
-
-
-rotationLengthDecoder : Decoder RotationLength
-rotationLengthDecoder =
-    Json.Decode.string
-        |> Json.Decode.andThen
-            (\rotationLength ->
-                case rotationLength of
-                    "DAILY" ->
-                        Json.Decode.succeed Daily
-
-                    "WEEKLY" ->
-                        Json.Decode.succeed Weekly
-
-                    _ ->
-                        Json.Decode.fail ("Klarte ikke å decode rotationLength med verdi: " ++ rotationLength)
-            )
