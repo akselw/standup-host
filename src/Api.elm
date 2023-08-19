@@ -6,7 +6,7 @@ import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
 import Task exposing (Task)
-import Team exposing (BackendTeam, Team)
+import Team exposing (Team)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem
 import Url.Builder as Url
@@ -29,20 +29,20 @@ getTeam msg apiKey teamShortName =
         |> Effect.sendCmd
 
 
-getTeammedlemmer : DatabaseApiToken -> Result Team.Error BackendTeam -> Task Team.Error Team
-getTeammedlemmer apiKey teamResult =
-    case teamResult of
-        Ok team ->
+getTeammedlemmer : DatabaseApiToken -> Result Team.Error TeamSummary -> Task Team.Error Team
+getTeammedlemmer apiKey teamSummaryResult =
+    case teamSummaryResult of
+        Ok teamSummary ->
             getFromDatabaseTask
                 { apiKey = apiKey
                 , table = "team_member"
                 , query =
-                    [ Url.string "team_id" ("eq." ++ Team.id team)
+                    [ Url.string "team_id" ("eq." ++ TeamSummary.id teamSummary)
                     , Url.string "select" "name,id"
                     ]
                 , decoder =
                     Json.Decode.list Teammedlem.decoder
-                        |> Json.Decode.map (Team.fromBackendTypes team)
+                        |> Json.Decode.map (Team.init teamSummary)
                 }
                 |> Task.mapError Team.HttpErrorForTeammedlemmer
 
@@ -50,9 +50,9 @@ getTeammedlemmer apiKey teamResult =
             Task.fail error
 
 
-decodeTeamFromList : Decoder (Result Team.Error BackendTeam)
+decodeTeamFromList : Decoder (Result Team.Error TeamSummary)
 decodeTeamFromList =
-    Json.Decode.list Team.teamDecoder
+    Json.Decode.list TeamSummary.decoder
         |> Json.Decode.andThen
             (\decodedList ->
                 case decodedList of
@@ -140,10 +140,10 @@ jsonResolver decoder =
                 Http.NetworkError_ ->
                     Err Http.NetworkError
 
-                Http.BadStatus_ metadata body ->
+                Http.BadStatus_ metadata _ ->
                     Err (Http.BadStatus metadata.statusCode)
 
-                Http.GoodStatus_ metadata body ->
+                Http.GoodStatus_ _ body ->
                     Json.Decode.decodeString decoder body
                         |> Result.mapError (Json.Decode.errorToString >> Http.BadBody)
         )

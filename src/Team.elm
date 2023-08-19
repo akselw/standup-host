@@ -1,44 +1,28 @@
 module Team exposing
-    ( BackendTeam
-    , Error(..)
+    ( Error(..)
     , Team
-    , fromBackendTypes
-    , id
+    , init
     , medlemmer
     , navn
-    , teamDecoder
     )
 
 import Http
-import Json.Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (required)
-import RotationLength exposing (RotationLength)
+import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
 
 
 type Team
-    = Team TeamInfo
+    = Team
+        { summary : TeamSummary
+        , medlemmer : List Teammedlem
+        }
 
 
-type alias TeamInfo =
-    { navn : String
-    , shortname : String
-    , medlemmer : List Teammedlem
-    , rotationLength : RotationLength
-    , properRandom : Bool
-    , ownerId : String
-    }
-
-
-fromBackendTypes : BackendTeam -> List Teammedlem -> Team
-fromBackendTypes (BackendTeam team) teammedlemmer =
+init : TeamSummary -> List Teammedlem -> Team
+init summary teammedlemmer =
     Team
-        { navn = team.navn
-        , shortname = team.shortname
+        { summary = summary
         , medlemmer = teammedlemmer
-        , rotationLength = team.rotationLength
-        , properRandom = team.properRandom
-        , ownerId = team.ownerId
         }
 
 
@@ -47,18 +31,13 @@ fromBackendTypes (BackendTeam team) teammedlemmer =
 
 
 navn : Team -> String
-navn (Team team) =
-    team.navn
+navn (Team { summary }) =
+    TeamSummary.navn summary
 
 
 medlemmer : Team -> List Teammedlem
 medlemmer (Team team) =
     team.medlemmer
-
-
-id : BackendTeam -> String
-id (BackendTeam team) =
-    team.id
 
 
 
@@ -70,40 +49,3 @@ type Error
     | IngenTeammedlemmer
     | HttpErrorForTeam Http.Error
     | HttpErrorForTeammedlemmer Http.Error
-
-
-
---- Decoding ---
-
-
-type BackendTeam
-    = BackendTeam BackendTeamInfo
-
-
-type alias BackendTeamInfo =
-    { navn : String
-    , shortname : String
-    , id : String
-    , rotationLength : RotationLength
-    , properRandom : Bool
-    , ownerId : String
-    }
-
-
-type alias BackendDataTeammedlem =
-    { navn : String
-    , teamNavn : String
-    , teamShortname : String
-    }
-
-
-teamDecoder : Decoder BackendTeam
-teamDecoder =
-    Json.Decode.succeed BackendTeamInfo
-        |> required "name" Json.Decode.string
-        |> required "shortname" Json.Decode.string
-        |> required "id" Json.Decode.string
-        |> required "rotation_length" RotationLength.decoder
-        |> required "proper_random" Json.Decode.bool
-        |> required "owner_id" Json.Decode.string
-        |> Json.Decode.map BackendTeam

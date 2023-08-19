@@ -1,4 +1,4 @@
-module TeamSummary exposing (TeamSummary, decoder, navn, shortname)
+module TeamSummary exposing (TeamSummary, decoder, id, navn, shortname)
 
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
@@ -31,6 +31,11 @@ navn (TeamSummary team) =
 shortname : TeamSummary -> String
 shortname (TeamSummary team) =
     team.shortname
+
+
+id : TeamSummary -> String
+id (TeamSummary team) =
+    team.id
 
 
 
