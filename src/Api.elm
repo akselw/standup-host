@@ -1,5 +1,6 @@
 module Api exposing (getAdminTeam, getAdminTeammedlemmer, getFromDatabase, getTeam)
 
+import AdminTeam exposing (AdminTeam, BackendAdminTeam)
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Http
@@ -47,7 +48,7 @@ getTeammedlemmer apiKey teamResult =
             Task.fail error
 
 
-getAdminTeam : (Result Team.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
+getAdminTeam : (Result AdminTeam.Error AdminTeam -> msg) -> DatabaseApiToken -> String -> Effect msg
 getAdminTeam msg apiKey teamShortName =
     getFromDatabaseTask
         { apiKey = apiKey
@@ -56,15 +57,15 @@ getAdminTeam msg apiKey teamShortName =
             [ Url.string "shortname" ("eq." ++ teamShortName)
             , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
             ]
-        , decoder = decodeTeamFromList
+        , decoder = decodeAdminTeamFromList
         }
-        |> Task.mapError Team.HttpErrorForTeam
+        |> Task.mapError AdminTeam.HttpErrorForTeam
         |> Task.andThen (getAdminTeammedlemmer apiKey)
         |> Task.attempt msg
         |> Effect.sendCmd
 
 
-getAdminTeammedlemmer : DatabaseApiToken -> Result Team.Error BackendTeam -> Task Team.Error Team
+getAdminTeammedlemmer : DatabaseApiToken -> Result AdminTeam.Error BackendAdminTeam -> Task AdminTeam.Error AdminTeam
 getAdminTeammedlemmer apiKey teamResult =
     case teamResult of
         Ok team ->
@@ -72,14 +73,14 @@ getAdminTeammedlemmer apiKey teamResult =
                 { apiKey = apiKey
                 , table = "team_member"
                 , query =
-                    [ Url.string "team_id" ("eq." ++ Team.id team)
-                    , Url.string "select" "name"
+                    [ Url.string "team_id" ("eq." ++ AdminTeam.id team)
+                    , Url.string "select" "name,id"
                     ]
                 , decoder =
-                    Team.teammedlemmerDecoder
-                        |> Json.Decode.map (Team.fromBackendTypes team)
+                    AdminTeam.teammedlemListDecoder
+                        |> Json.Decode.map (AdminTeam.fromBackendTypes team)
                 }
-                |> Task.mapError Team.HttpErrorForTeammedlemmer
+                |> Task.mapError AdminTeam.HttpErrorForTeammedlemmer
 
         Err error ->
             Task.fail error
@@ -96,6 +97,23 @@ decodeTeamFromList =
 
                     [] ->
                         Json.Decode.succeed (Err Team.FantIkkeTeam)
+
+                    _ ->
+                        Json.Decode.fail "Listen returnerte flere enn ett element"
+            )
+
+
+decodeAdminTeamFromList : Decoder (Result AdminTeam.Error BackendAdminTeam)
+decodeAdminTeamFromList =
+    Json.Decode.list AdminTeam.teamDecoder
+        |> Json.Decode.andThen
+            (\decodedList ->
+                case decodedList of
+                    singleElement :: [] ->
+                        Json.Decode.succeed (Ok singleElement)
+
+                    [] ->
+                        Json.Decode.succeed (Err AdminTeam.FantIkkeTeam)
 
                     _ ->
                         Json.Decode.fail "Listen returnerte flere enn ett element"
