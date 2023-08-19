@@ -1,4 +1,4 @@
-module Api exposing (getFromDatabase, getTeam)
+module Api exposing (getAdminTeam, getAdminTeammedlemmer, getFromDatabase, getTeam)
 
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
@@ -28,6 +28,44 @@ getTeam msg apiKey teamShortName =
 
 getTeammedlemmer : DatabaseApiToken -> Result Team.Error BackendTeam -> Task Team.Error Team
 getTeammedlemmer apiKey teamResult =
+    case teamResult of
+        Ok team ->
+            getFromDatabaseTask
+                { apiKey = apiKey
+                , table = "team_member"
+                , query =
+                    [ Url.string "team_id" ("eq." ++ Team.id team)
+                    , Url.string "select" "name"
+                    ]
+                , decoder =
+                    Team.teammedlemmerDecoder
+                        |> Json.Decode.map (Team.fromBackendTypes team)
+                }
+                |> Task.mapError Team.HttpErrorForTeammedlemmer
+
+        Err error ->
+            Task.fail error
+
+
+getAdminTeam : (Result Team.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
+getAdminTeam msg apiKey teamShortName =
+    getFromDatabaseTask
+        { apiKey = apiKey
+        , table = "team"
+        , query =
+            [ Url.string "shortname" ("eq." ++ teamShortName)
+            , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            ]
+        , decoder = decodeTeamFromList
+        }
+        |> Task.mapError Team.HttpErrorForTeam
+        |> Task.andThen (getAdminTeammedlemmer apiKey)
+        |> Task.attempt msg
+        |> Effect.sendCmd
+
+
+getAdminTeammedlemmer : DatabaseApiToken -> Result Team.Error BackendTeam -> Task Team.Error Team
+getAdminTeammedlemmer apiKey teamResult =
     case teamResult of
         Ok team ->
             getFromDatabaseTask
