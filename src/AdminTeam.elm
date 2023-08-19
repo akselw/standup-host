@@ -1,20 +1,19 @@
 module AdminTeam exposing
     ( AdminTeam
     , BackendAdminTeam
-    , BackendAdminTeammedlemmer
     , Error(..)
     , fromBackendTypes
     , id
     , medlemmer
     , navn
     , teamDecoder
-    , teammedlemListDecoder
     )
 
 import Http
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import RotationLength exposing (RotationLength)
+import Teammedlem exposing (Teammedlem)
 
 
 type AdminTeam
@@ -24,7 +23,7 @@ type AdminTeam
 type alias AdminTeamInfo =
     { navn : String
     , shortname : String
-    , medlemmer : List AdminTeammedlem
+    , medlemmer : List Teammedlem
     , rotationLength : RotationLength
     , properRandom : Bool
     , ownerId : String
@@ -37,8 +36,8 @@ type alias AdminTeammedlem =
     }
 
 
-fromBackendTypes : BackendAdminTeam -> BackendAdminTeammedlemmer -> AdminTeam
-fromBackendTypes (BackendAdminTeam team) (BackendTeammedlemmer teammedlemmer) =
+fromBackendTypes : BackendAdminTeam -> List Teammedlem -> AdminTeam
+fromBackendTypes (BackendAdminTeam team) teammedlemmer =
     AdminTeam
         { navn = team.navn
         , shortname = team.shortname
@@ -58,7 +57,7 @@ navn (AdminTeam team) =
     team.navn
 
 
-medlemmer : AdminTeam -> List AdminTeammedlem
+medlemmer : AdminTeam -> List Teammedlem
 medlemmer (AdminTeam team) =
     team.medlemmer
 
@@ -95,23 +94,6 @@ type alias BackendAdminTeamInfo =
     , properRandom : Bool
     , ownerId : String
     }
-
-
-type BackendAdminTeammedlemmer
-    = BackendTeammedlemmer (List AdminTeammedlem)
-
-
-teammedlemListDecoder : Decoder BackendAdminTeammedlemmer
-teammedlemListDecoder =
-    Json.Decode.list teammedlemDecoder
-        |> Json.Decode.map BackendTeammedlemmer
-
-
-teammedlemDecoder : Decoder AdminTeammedlem
-teammedlemDecoder =
-    Json.Decode.succeed AdminTeammedlem
-        |> required "name" Json.Decode.string
-        |> required "id" Json.Decode.string
 
 
 type alias BackendDataTeammedlem =

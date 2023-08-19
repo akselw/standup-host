@@ -9,6 +9,7 @@ import Json.Decode exposing (Decoder)
 import Task exposing (Task)
 import Team exposing (BackendTeam, Team)
 import TeamSummary exposing (TeamSummary)
+import Teammedlem
 import Url.Builder as Url
 
 
@@ -79,7 +80,7 @@ getAdminTeammedlemmer apiKey teamResult =
                     , Url.string "select" "name,id"
                     ]
                 , decoder =
-                    AdminTeam.teammedlemListDecoder
+                    Json.Decode.list Teammedlem.decoder
                         |> Json.Decode.map (AdminTeam.fromBackendTypes team)
                 }
                 |> Task.mapError AdminTeam.HttpErrorForTeammedlemmer
