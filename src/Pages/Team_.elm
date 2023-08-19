@@ -1,5 +1,6 @@
 module Pages.Team_ exposing (Model, Msg, page)
 
+import AdminTeam exposing (AdminTeam)
 import Api
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -17,6 +18,7 @@ import Route exposing (Route)
 import Shared
 import Task
 import Team exposing (Team)
+import Teammedlem exposing (Teammedlem)
 import Time exposing (Month(..), Posix)
 import View exposing (View)
 
@@ -37,14 +39,14 @@ type AnimationState
 type Model
     = Init
     | LoadingTeam Dato
-    | Failure Team.Error
+    | Failure AdminTeam.Error
     | Success
         { dagensDato : Dato
-        , dagensRekkefølge : List String
-        , morgensdagensRekkefølge : List String
+        , dagensRekkefølge : List Teammedlem
+        , morgensdagensRekkefølge : List Teammedlem
         , morgendagensAnimationState : AnimationState
         , valgtDag : ValgtDag
-        , team : Team
+        , team : AdminTeam
         }
 
 
@@ -62,7 +64,7 @@ type Msg
     | VelgNyPersonIDag
     | VelgNyPersonNesteArbeidsdag
     | EndreFane ValgtDag
-    | HentTeamResponse (Result Team.Error Team)
+    | HentTeamResponse (Result AdminTeam.Error AdminTeam)
     | AnimationTick
 
 
@@ -86,13 +88,13 @@ update msg model =
                                 , dagensRekkefølge =
                                     dato
                                         |> Dato.toSeed
-                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
+                                        |> Random.step (Random.List.shuffle (AdminTeam.medlemmer team))
                                         |> Tuple.first
                                 , morgensdagensRekkefølge =
                                     dato
                                         |> Dato.nesteArbeidsdag
                                         |> Dato.toSeed
-                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
+                                        |> Random.step (Random.List.shuffle (AdminTeam.medlemmer team))
                                         |> Tuple.first
                                 , valgtDag = Idag
                                 , morgendagensAnimationState = IkkeVisNoe
@@ -234,7 +236,7 @@ viewContent model =
             [ text "" ]
 
 
-viewIdag : List String -> Dato -> Html Msg
+viewIdag : List Teammedlem -> Dato -> Html Msg
 viewIdag rekkefølge dagensDato =
     case List.head rekkefølge of
         Just standupVert ->
@@ -245,11 +247,11 @@ viewIdag rekkefølge dagensDato =
                     , Css.alignItems Css.center
                     ]
                 ]
-                [ h1 [] [ text standupVert ]
+                [ h1 [] [ text (Teammedlem.navn standupVert) ]
                 , p [] [ text ("skal holde standup i dag, " ++ String.toLower (Dato.toUkedagString dagensDato) ++ " " ++ Dato.toString dagensDato ++ ".") ]
                 , button
                     [ onClick VelgNyPersonIDag ]
-                    [ text (standupVert ++ " kan ikke") ]
+                    [ text (Teammedlem.navn standupVert ++ " kan ikke") ]
                 ]
 
         Nothing ->
@@ -307,7 +309,7 @@ animationClasses animationState element =
         Css.opacity Css.zero
 
 
-viewNesteVirkedag : AnimationState -> List String -> Dato -> Html Msg
+viewNesteVirkedag : AnimationState -> List Teammedlem -> Dato -> Html Msg
 viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
     case List.head nesteVirkedagsRekkefølge of
         Just standupVert ->
@@ -324,12 +326,12 @@ viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
                 , p [ Attributes.css [ animationClasses animationState AndreSetning ] ]
                     [ text "er" ]
                 , h1 [ Attributes.css [ animationClasses animationState StandupVert ] ]
-                    [ text standupVert ]
+                    [ text (Teammedlem.navn standupVert) ]
                 , button
                     [ Attributes.css [ animationClasses animationState NesteKnapp ]
                     , onClick VelgNyPersonNesteArbeidsdag
                     ]
-                    [ text (standupVert ++ " kan ikke") ]
+                    [ text (Teammedlem.navn standupVert ++ " kan ikke") ]
                 ]
 
         Nothing ->
@@ -348,7 +350,7 @@ init apiKey teamShortName =
             [ Time.now
                 |> Task.perform TimeReceived
                 |> Effect.sendCmd
-            , Api.getTeam HentTeamResponse apiKey teamShortName
+            , Api.getAdminTeam HentTeamResponse apiKey teamShortName
             ]
         )
 
