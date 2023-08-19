@@ -1,6 +1,5 @@
 module Pages.MinSide exposing (Model, Msg, page)
 
-import AccessToken exposing (AccessToken)
 import Api
 import Auth
 import Css
@@ -9,13 +8,11 @@ import Effect exposing (Effect)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attributes
 import Http
-import Json.Decode exposing (Decoder)
-import Json.Decode.Pipeline exposing (required)
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
-import Url.Builder as Url
+import TeamSummary exposing (TeamSummary)
 import View exposing (View)
 
 
@@ -36,35 +33,14 @@ page user shared route =
 type Model
     = Loading
     | Failure Http.Error
-    | Success (List Team)
-
-
-type alias Team =
-    { name : String
-    , shortname : String
-    }
+    | Success (List TeamSummary)
 
 
 init : Auth.User -> DatabaseApiToken -> () -> ( Model, Effect Msg )
 init user apiKey () =
     ( Loading
-    , Api.getFromDatabase
-        { apiKey = apiKey
-        , table = "team"
-        , query =
-            [ Url.string "owner_id" ("eq." ++ AccessToken.userId user.accessToken)
-            , Url.string "select" "name, shortname"
-            ]
-        , expect = Http.expectJson GetTeamsResponse (Json.Decode.list teamDecoder)
-        }
+    , Api.getTeamsForUser apiKey GetTeamsResponse user.accessToken
     )
-
-
-teamDecoder : Decoder Team
-teamDecoder =
-    Json.Decode.succeed Team
-        |> required "name" Json.Decode.string
-        |> required "shortname" Json.Decode.string
 
 
 
@@ -72,7 +48,7 @@ teamDecoder =
 
 
 type Msg
-    = GetTeamsResponse (Result Http.Error (List Team))
+    = GetTeamsResponse (Result Http.Error (List TeamSummary))
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -123,7 +99,7 @@ view model =
     }
 
 
-viewTeam : Team -> Html msg
+viewTeam : TeamSummary -> Html msg
 viewTeam team =
-    a [ Attributes.href (Route.Path.toString (Route.Path.Team_ { team = team.shortname })) ]
-        [ text team.name ]
+    a [ Attributes.href (Route.Path.toString (Route.Path.Team_ { team = TeamSummary.shortname team })) ]
+        [ text (TeamSummary.navn team) ]
