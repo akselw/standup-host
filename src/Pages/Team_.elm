@@ -1,6 +1,5 @@
 module Pages.Team_ exposing (Model, Msg, page)
 
-import AdminTeam exposing (AdminTeam)
 import Api
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -16,6 +15,7 @@ import Random.List
 import Route exposing (Route)
 import Shared
 import Task
+import Team exposing (Team)
 import Teammedlem exposing (Teammedlem)
 import Time exposing (Month(..), Posix)
 import View exposing (View)
@@ -37,14 +37,14 @@ type AnimationState
 type Model
     = Init
     | LoadingTeam Dato
-    | Failure AdminTeam.Error
+    | Failure Team.Error
     | Success
         { dagensDato : Dato
         , dagensRekkefølge : List Teammedlem
         , morgensdagensRekkefølge : List Teammedlem
         , morgendagensAnimationState : AnimationState
         , valgtDag : ValgtDag
-        , team : AdminTeam
+        , team : Team
         }
 
 
@@ -62,7 +62,7 @@ type Msg
     | VelgNyPersonIDag
     | VelgNyPersonNesteArbeidsdag
     | EndreFane ValgtDag
-    | HentTeamResponse (Result AdminTeam.Error AdminTeam)
+    | HentTeamResponse (Result Team.Error Team)
     | AnimationTick
 
 
@@ -86,13 +86,13 @@ update msg model =
                                 , dagensRekkefølge =
                                     dato
                                         |> Dato.toSeed
-                                        |> Random.step (Random.List.shuffle (AdminTeam.medlemmer team))
+                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
                                         |> Tuple.first
                                 , morgensdagensRekkefølge =
                                     dato
                                         |> Dato.nesteArbeidsdag
                                         |> Dato.toSeed
-                                        |> Random.step (Random.List.shuffle (AdminTeam.medlemmer team))
+                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
                                         |> Tuple.first
                                 , valgtDag = Idag
                                 , morgendagensAnimationState = IkkeVisNoe
@@ -348,7 +348,7 @@ init apiKey teamShortName =
             [ Time.now
                 |> Task.perform TimeReceived
                 |> Effect.sendCmd
-            , Api.getAdminTeam HentTeamResponse apiKey teamShortName
+            , Api.getTeam HentTeamResponse apiKey teamShortName
             ]
         )
 

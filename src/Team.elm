@@ -1,7 +1,7 @@
-module AdminTeam exposing
-    ( AdminTeam
-    , BackendAdminTeam
+module Team exposing
+    ( BackendTeam
     , Error(..)
+    , Team
     , fromBackendTypes
     , id
     , medlemmer
@@ -16,11 +16,11 @@ import RotationLength exposing (RotationLength)
 import Teammedlem exposing (Teammedlem)
 
 
-type AdminTeam
-    = AdminTeam AdminTeamInfo
+type Team
+    = Team TeamInfo
 
 
-type alias AdminTeamInfo =
+type alias TeamInfo =
     { navn : String
     , shortname : String
     , medlemmer : List Teammedlem
@@ -30,15 +30,9 @@ type alias AdminTeamInfo =
     }
 
 
-type alias AdminTeammedlem =
-    { navn : String
-    , id : String
-    }
-
-
-fromBackendTypes : BackendAdminTeam -> List Teammedlem -> AdminTeam
-fromBackendTypes (BackendAdminTeam team) teammedlemmer =
-    AdminTeam
+fromBackendTypes : BackendTeam -> List Teammedlem -> Team
+fromBackendTypes (BackendTeam team) teammedlemmer =
+    Team
         { navn = team.navn
         , shortname = team.shortname
         , medlemmer = teammedlemmer
@@ -52,18 +46,18 @@ fromBackendTypes (BackendAdminTeam team) teammedlemmer =
 --- Felter ---
 
 
-navn : AdminTeam -> String
-navn (AdminTeam team) =
+navn : Team -> String
+navn (Team team) =
     team.navn
 
 
-medlemmer : AdminTeam -> List Teammedlem
-medlemmer (AdminTeam team) =
+medlemmer : Team -> List Teammedlem
+medlemmer (Team team) =
     team.medlemmer
 
 
-id : BackendAdminTeam -> String
-id (BackendAdminTeam team) =
+id : BackendTeam -> String
+id (BackendTeam team) =
     team.id
 
 
@@ -82,11 +76,11 @@ type Error
 --- Decoding ---
 
 
-type BackendAdminTeam
-    = BackendAdminTeam BackendAdminTeamInfo
+type BackendTeam
+    = BackendTeam BackendTeamInfo
 
 
-type alias BackendAdminTeamInfo =
+type alias BackendTeamInfo =
     { navn : String
     , shortname : String
     , id : String
@@ -103,13 +97,13 @@ type alias BackendDataTeammedlem =
     }
 
 
-teamDecoder : Decoder BackendAdminTeam
+teamDecoder : Decoder BackendTeam
 teamDecoder =
-    Json.Decode.succeed BackendAdminTeamInfo
+    Json.Decode.succeed BackendTeamInfo
         |> required "name" Json.Decode.string
         |> required "shortname" Json.Decode.string
         |> required "id" Json.Decode.string
         |> required "rotation_length" RotationLength.decoder
         |> required "proper_random" Json.Decode.bool
         |> required "owner_id" Json.Decode.string
-        |> Json.Decode.map BackendAdminTeam
+        |> Json.Decode.map BackendTeam

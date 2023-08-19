@@ -1,7 +1,6 @@
 module Pages.Team_.Admin exposing (Model, Msg, page)
 
 import AccessToken exposing (AccessToken)
-import AdminTeam exposing (AdminTeam)
 import Api
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
@@ -9,6 +8,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import Shared.Model
+import Team exposing (Team)
 import View exposing (View)
 
 
@@ -36,7 +36,7 @@ type alias Model =
 init : DatabaseApiToken -> String -> Maybe AccessToken -> () -> ( Model, Effect Msg )
 init apiKey shortName maybeAccessToken () =
     ( {}
-    , Api.getAdminTeam HentTeamResponse apiKey shortName
+    , Api.getTeam HentTeamResponse apiKey shortName
     )
 
 
@@ -45,7 +45,7 @@ init apiKey shortName maybeAccessToken () =
 
 
 type Msg
-    = HentTeamResponse (Result AdminTeam.Error AdminTeam)
+    = HentTeamResponse (Result Team.Error Team)
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
