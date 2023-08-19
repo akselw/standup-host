@@ -1,4 +1,4 @@
-module Api exposing (getAdminTeam, getAdminTeammedlemmer, getFromDatabase, getTeam, getTeamsForUser)
+module Api exposing (getAdminTeam, getAdminTeammedlemmer, getFromDatabase, getTeamsForUser)
 
 import AccessToken exposing (AccessToken)
 import AdminTeam exposing (AdminTeam, BackendAdminTeam)
@@ -7,48 +7,9 @@ import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
 import Task exposing (Task)
-import Team exposing (BackendTeam, Team)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem
 import Url.Builder as Url
-
-
-getTeam : (Result Team.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
-getTeam msg apiKey teamShortName =
-    getFromDatabaseTask
-        { apiKey = apiKey
-        , table = "team"
-        , query =
-            [ Url.string "shortname" ("eq." ++ teamShortName)
-            , Url.string "select" "name,id,shortname,rotation_length,proper_random"
-            ]
-        , decoder = decodeTeamFromList
-        }
-        |> Task.mapError Team.HttpErrorForTeam
-        |> Task.andThen (getTeammedlemmer apiKey)
-        |> Task.attempt msg
-        |> Effect.sendCmd
-
-
-getTeammedlemmer : DatabaseApiToken -> Result Team.Error BackendTeam -> Task Team.Error Team
-getTeammedlemmer apiKey teamResult =
-    case teamResult of
-        Ok team ->
-            getFromDatabaseTask
-                { apiKey = apiKey
-                , table = "team_member"
-                , query =
-                    [ Url.string "team_id" ("eq." ++ Team.id team)
-                    , Url.string "select" "name"
-                    ]
-                , decoder =
-                    Team.teammedlemmerDecoder
-                        |> Json.Decode.map (Team.fromBackendTypes team)
-                }
-                |> Task.mapError Team.HttpErrorForTeammedlemmer
-
-        Err error ->
-            Task.fail error
 
 
 getAdminTeam : (Result AdminTeam.Error AdminTeam -> msg) -> DatabaseApiToken -> String -> Effect msg
@@ -87,23 +48,6 @@ getAdminTeammedlemmer apiKey teamResult =
 
         Err error ->
             Task.fail error
-
-
-decodeTeamFromList : Decoder (Result Team.Error BackendTeam)
-decodeTeamFromList =
-    Json.Decode.list Team.teamDecoder
-        |> Json.Decode.andThen
-            (\decodedList ->
-                case decodedList of
-                    singleElement :: [] ->
-                        Json.Decode.succeed (Ok singleElement)
-
-                    [] ->
-                        Json.Decode.succeed (Err Team.FantIkkeTeam)
-
-                    _ ->
-                        Json.Decode.fail "Listen returnerte flere enn ett element"
-            )
 
 
 decodeAdminTeamFromList : Decoder (Result AdminTeam.Error BackendAdminTeam)

@@ -7,9 +7,8 @@ import DatabaseApiToken exposing (DatabaseApiToken)
 import Dato exposing (Dato)
 import Effect exposing (Effect)
 import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attributes exposing (class, classList, type_)
+import Html.Styled.Attributes as Attributes exposing (type_)
 import Html.Styled.Events exposing (onClick)
-import Http
 import Page exposing (Page)
 import Process
 import Random
@@ -17,7 +16,6 @@ import Random.List
 import Route exposing (Route)
 import Shared
 import Task
-import Team exposing (Team)
 import Teammedlem exposing (Teammedlem)
 import Time exposing (Month(..), Posix)
 import View exposing (View)
