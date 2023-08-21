@@ -2,6 +2,7 @@ module Team exposing
     ( Error(..)
     , Team
     , init
+    , isOwner
     , medlemmer
     , navn
     )
@@ -9,6 +10,7 @@ module Team exposing
 import Http
 import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
+import UserId exposing (UserId)
 
 
 type Team
@@ -38,6 +40,15 @@ navn (Team { summary }) =
 medlemmer : Team -> List Teammedlem
 medlemmer (Team team) =
     team.medlemmer
+
+
+
+--- Helper ---
+
+
+isOwner : Team -> UserId -> Bool
+isOwner (Team { summary }) userId =
+    TeamSummary.isOwner summary userId
 
 
 
