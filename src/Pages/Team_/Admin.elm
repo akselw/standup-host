@@ -9,6 +9,7 @@ import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
 import Html.Styled.Events exposing (onClick, onInput)
+import List.Extra
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -48,6 +49,7 @@ type alias TeamOwnerModel =
 type TeamMedlemState
     = InitialMedlemState
     | RedigererNavn String
+    | LagrerNavneendring String
 
 
 init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
@@ -68,6 +70,8 @@ type Msg
 
 type SuccessMsg
     = RedigerKnappTrykket Teammedlem
+    | AvbrytRedigeringKnappTrykket Teammedlem
+    | LagreRedigeringKnappTrykket Teammedlem
     | MedlemNavnOppdatert Teammedlem String
     | SlettKnappTrykket Teammedlem
 
@@ -127,6 +131,23 @@ successUpdate apiKey accessToken msg model =
             , Effect.none
             )
 
+        AvbrytRedigeringKnappTrykket teammedlem ->
+            ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem avbrytNavnRedigering }
+            , Effect.none
+            )
+
+        LagreRedigeringKnappTrykket teammedlem ->
+            case endretMedlemnavn model.medlemmer teammedlem of
+                Just endretNavn ->
+                    ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem (always (LagrerNavneendring endretNavn)) }
+                    , Effect.none
+                    )
+
+                Nothing ->
+                    ( model
+                    , Effect.none
+                    )
+
         SlettKnappTrykket teammedlem ->
             ( model
             , Effect.none
@@ -143,6 +164,11 @@ oppdaterNavn oppdatertNavn _ =
     RedigererNavn oppdatertNavn
 
 
+avbrytNavnRedigering : ( Teammedlem, TeamMedlemState ) -> TeamMedlemState
+avbrytNavnRedigering _ =
+    InitialMedlemState
+
+
 updateMedlemState : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> (( Teammedlem, TeamMedlemState ) -> TeamMedlemState) -> List ( Teammedlem, TeamMedlemState )
 updateMedlemState medlemmer medlemToUpdate updateFunction =
     List.map
@@ -154,6 +180,22 @@ updateMedlemState medlemmer medlemToUpdate updateFunction =
                 ( medlem, state )
         )
         medlemmer
+
+
+endretMedlemnavn : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> Maybe String
+endretMedlemnavn medlemmer teammedlem =
+    let
+        medlemOgState =
+            medlemmer
+                |> List.Extra.find (\( medlem, state ) -> medlem == teammedlem)
+                |> Maybe.map Tuple.second
+    in
+    case medlemOgState of
+        Just (RedigererNavn endretNavn) ->
+            Just endretNavn
+
+        _ ->
+            Nothing
 
 
 
@@ -221,7 +263,12 @@ viewTeammedlem ( medlem, medlemState ) =
                         [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
                         , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
                         ]
+                    , button [ onClick (AvbrytRedigeringKnappTrykket medlem) ] [ text "Avbryt" ]
+                    , button [ onClick (LagreRedigeringKnappTrykket medlem) ] [ text "Lagre" ]
                     ]
+
+            LagrerNavneendring string ->
+                text "lagrer"
         ]
 
 
