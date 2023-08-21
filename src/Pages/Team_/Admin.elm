@@ -5,6 +5,7 @@ import Api
 import Auth
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
+import Html.Styled exposing (..)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -17,7 +18,7 @@ page : Auth.User -> Shared.Model -> Route { team : String } -> Page Model Msg
 page user shared route =
     Page.new
         { init = init shared.apiKey route.params.team user.accessToken
-        , update = update
+        , update = update shared.apiKey user.accessToken
         , subscriptions = subscriptions
         , view = view
         }
@@ -27,13 +28,20 @@ page user shared route =
 -- INIT
 
 
-type alias Model =
-    {}
+type Model
+    = Loading
+    | Failure Team.Error
+    | NotTeamOwner Team
+    | TeamOwner TeamOwnerModel
+
+
+type alias TeamOwnerModel =
+    { team : Team }
 
 
 init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
 init apiKey shortName accessToken () =
-    ( {}
+    ( Loading
     , Api.getTeam HentTeamResponse apiKey shortName
     )
 
@@ -46,24 +54,20 @@ type Msg
     = HentTeamResponse (Result Team.Error Team)
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
+update apiKey accessToken msg model =
     case msg of
         HentTeamResponse (Ok team) ->
-            let
-                _ =
-                    Debug.log "team" team
-            in
-            ( model
+            ( if Team.isOwner team (AccessToken.userId accessToken) then
+                TeamOwner { team = team }
+
+              else
+                NotTeamOwner team
             , Effect.none
             )
 
         HentTeamResponse (Err error) ->
-            let
-                _ =
-                    Debug.log "error" error
-            in
-            ( model
+            ( Failure error
             , Effect.none
             )
 
@@ -83,4 +87,8 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    View.fromString "Pages.Team_.Admin"
+    { title = ""
+    , body =
+        [ text (Debug.toString model)
+        ]
+    }
