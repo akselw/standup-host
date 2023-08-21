@@ -6,8 +6,9 @@ import Auth
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
-import Html.Styled exposing (..)
+import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes
+import Html.Styled.Events exposing (onClick)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -40,12 +41,12 @@ type Model
 
 type alias TeamOwnerModel =
     { team : Team
-    , medlemmer : List TeamMedlemState
+    , medlemmer : List ( Teammedlem, TeamMedlemState )
     }
 
 
 type TeamMedlemState
-    = InitialMedlemState Teammedlem
+    = InitialMedlemState
 
 
 init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
@@ -61,6 +62,12 @@ init apiKey shortName accessToken () =
 
 type Msg
     = HentTeamResponse (Result Team.Error Team)
+    | SuccessMsg SuccessMsg
+
+
+type SuccessMsg
+    = RedigerKnappTrykket Teammedlem
+    | SlettKnappTrykket Teammedlem
 
 
 update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
@@ -83,12 +90,40 @@ update apiKey accessToken msg model =
             , Effect.none
             )
 
+        SuccessMsg successMsg ->
+            case model of
+                TeamOwner teamOwnerModel ->
+                    let
+                        ( newModel, effect ) =
+                            successUpdate apiKey accessToken successMsg teamOwnerModel
+                    in
+                    ( TeamOwner newModel, effect )
 
-initTeammedlemmer : Team -> List TeamMedlemState
+                _ ->
+                    ( model
+                    , Effect.none
+                    )
+
+
+initTeammedlemmer : Team -> List ( Teammedlem, TeamMedlemState )
 initTeammedlemmer team =
     team
         |> Team.medlemmer
-        |> List.map InitialMedlemState
+        |> List.map (\medlem -> ( medlem, InitialMedlemState ))
+
+
+successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel -> ( TeamOwnerModel, Effect Msg )
+successUpdate apiKey accessToken msg model =
+    case msg of
+        RedigerKnappTrykket teammedlem ->
+            ( model
+            , Effect.none
+            )
+
+        SlettKnappTrykket teammedlem ->
+            ( model
+            , Effect.none
+            )
 
 
 
@@ -111,24 +146,45 @@ view model =
 
             TeamOwner teamOwnerModel ->
                 viewTeamOwner teamOwnerModel
+                    |> List.map (Html.map SuccessMsg)
     }
 
 
-viewTeamOwner : TeamOwnerModel -> List (Html Msg)
+viewTeamOwner : TeamOwnerModel -> List (Html SuccessMsg)
 viewTeamOwner model =
     [ viewInnstillinger model
     , viewTeammedlemmer model.medlemmer
     ]
 
 
-viewInnstillinger : TeamOwnerModel -> Html Msg
+viewInnstillinger : TeamOwnerModel -> Html SuccessMsg
 viewInnstillinger model =
     text ""
 
 
-viewTeammedlemmer : List TeamMedlemState -> Html Msg
+viewTeammedlemmer : List ( Teammedlem, TeamMedlemState ) -> Html SuccessMsg
 viewTeammedlemmer medlemmer =
-    pre [ Attributes.css [ Css.whiteSpace Css.normal ] ] [ text (Debug.toString medlemmer) ]
+    div
+        [ Attributes.css
+            [ Css.displayFlex
+            , Css.flexDirection Css.column
+            , Css.property "gap" "8px"
+            ]
+        ]
+        (List.map viewTeammedlem medlemmer)
+
+
+viewTeammedlem : ( Teammedlem, TeamMedlemState ) -> Html SuccessMsg
+viewTeammedlem ( medlem, medlemState ) =
+    div [ Attributes.css [ Css.padding (Css.px 16) ] ]
+        [ case medlemState of
+            InitialMedlemState ->
+                div []
+                    [ text (Teammedlem.navn medlem)
+                    , button [ onClick (RedigerKnappTrykket medlem) ] [ text "Rediger" ]
+                    , button [ onClick (SlettKnappTrykket medlem) ] [ text "Slett" ]
+                    ]
+        ]
 
 
 
