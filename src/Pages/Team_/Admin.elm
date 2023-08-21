@@ -89,6 +89,7 @@ type SuccessMsg
     | LeggTilMedlemNavnOppdatert String
     | AvbrytLeggTilMedlemKnappTrykket
     | LagreLeggTilMedlemKnappTrykket
+    | LeggTilMedlemResponse (Result Http.Error Teammedlem)
 
 
 update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
@@ -193,6 +194,7 @@ successUpdate apiKey accessToken msg model =
         StartÅLeggeTilMedlemTrykket ->
             ( { model | leggTilMedlemState = RedigererLeggTilMedlem "" }
             , Effect.none
+              -- TODO: Fokus på inputfelt
             )
 
         LeggTilMedlemNavnOppdatert string ->
@@ -206,7 +208,36 @@ successUpdate apiKey accessToken msg model =
             )
 
         LagreLeggTilMedlemKnappTrykket ->
-            ( model
+            case model.leggTilMedlemState of
+                RedigererLeggTilMedlem navn ->
+                    ( { model | leggTilMedlemState = LagrerLeggTilMedlem navn }
+                    , Api.leggTilTeammedlem apiKey LeggTilMedlemResponse accessToken model.team navn
+                    )
+
+                _ ->
+                    ( model
+                    , Effect.none
+                    )
+
+        LeggTilMedlemResponse (Ok teammedlem) ->
+            ( { model
+                | medlemmer = model.medlemmer ++ [ ( teammedlem, InitialMedlemState ) ]
+                , leggTilMedlemState = RedigererLeggTilMedlem ""
+              }
+            , Effect.none
+              -- TODO: Fokus på inputfelt
+            )
+
+        LeggTilMedlemResponse (Err err) ->
+            ( { model
+                | leggTilMedlemState =
+                    case model.leggTilMedlemState of
+                        LagrerLeggTilMedlem string ->
+                            RedigererLeggTilMedlem string
+
+                        _ ->
+                            model.leggTilMedlemState
+              }
             , Effect.none
             )
 
@@ -357,7 +388,7 @@ viewLeggTilMedlem leggTilMedlemState =
                     , input [ value string, onInput LeggTilMedlemNavnOppdatert ] []
                     ]
                 , button [ onClick AvbrytLeggTilMedlemKnappTrykket ] [ text "Avbryt" ]
-                , button [ onClick LagreLeggTilMedlemKnappTrykket ] [ text "Lagre" ]
+                , button [ onClick LagreLeggTilMedlemKnappTrykket ] [ text "Legg til" ]
                 ]
 
         LagrerLeggTilMedlem string ->

@@ -2,6 +2,7 @@ module Team exposing
     ( Error(..)
     , Team
     , hasOwner
+    , id
     , init
     , medlemmer
     , navn
@@ -35,6 +36,11 @@ init summary teammedlemmer =
 navn : Team -> String
 navn (Team { summary }) =
     TeamSummary.navn summary
+
+
+id : Team -> String
+id (Team { summary }) =
+    TeamSummary.id summary
 
 
 medlemmer : Team -> List Teammedlem

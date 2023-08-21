@@ -1,4 +1,4 @@
-module Api exposing (getTeam, getTeamsForUser, slettTeammedlem, updateTeammedlemNavn)
+module Api exposing (getTeam, getTeamsForUser, leggTilTeammedlem, slettTeammedlem, updateTeammedlemNavn)
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -115,6 +115,22 @@ slettTeammedlem apiKey msg accessToken teammedlem =
         }
 
 
+leggTilTeammedlem : DatabaseApiToken -> (Result Http.Error Teammedlem -> msg) -> AccessToken -> Team -> String -> Effect msg
+leggTilTeammedlem apiKey msg accessToken team navn =
+    addToDatabase
+        { apiKey = apiKey
+        , accessToken = accessToken
+        , table = "team_member"
+        , query = []
+        , body =
+            Json.Encode.object
+                [ ( "name", Json.Encode.string navn )
+                , ( "team_id", Json.Encode.string (Team.id team) )
+                ]
+        , expect = expectSingleElement msg Teammedlem.decoder
+        }
+
+
 expectSingleElement : (Result Http.Error a -> msg) -> Decoder a -> Http.Expect msg
 expectSingleElement msg decoder =
     Http.expectJson msg
@@ -194,6 +210,36 @@ jsonResolver decoder =
                     Json.Decode.decodeString decoder body
                         |> Result.mapError (Json.Decode.errorToString >> Http.BadBody)
         )
+
+
+addToDatabase :
+    { apiKey : DatabaseApiToken
+    , accessToken : AccessToken
+    , table : String
+    , query : List Url.QueryParameter
+    , body : Json.Encode.Value
+    , expect : Http.Expect msg
+    }
+    -> Effect msg
+addToDatabase { apiKey, accessToken, table, query, body, expect } =
+    Http.request
+        { method = "POST"
+        , headers =
+            [ Http.header "apikey" (DatabaseApiToken.toString apiKey)
+            , Http.header "Authorization" ("Bearer " ++ AccessToken.token accessToken)
+            , Http.header "Prefer" "return=representation"
+            ]
+        , url =
+            Url.crossOrigin
+                "https://xluvzigagcthclpwrzhj.supabase.co"
+                [ "rest", "v1", table ]
+                query
+        , body = Http.jsonBody body
+        , expect = expect
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+        |> Effect.sendCmd
 
 
 updateInDatabase :
