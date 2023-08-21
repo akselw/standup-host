@@ -127,19 +127,19 @@ successUpdate apiKey accessToken msg model =
             )
 
         MedlemNavnOppdatert teammedlem string ->
-            ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem (oppdaterNavn string) }
+            ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem (RedigererNavn string) }
             , Effect.none
             )
 
         AvbrytRedigeringKnappTrykket teammedlem ->
-            ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem avbrytNavnRedigering }
+            ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem InitialMedlemState }
             , Effect.none
             )
 
         LagreRedigeringKnappTrykket teammedlem ->
             case endretMedlemnavn model.medlemmer teammedlem of
                 Just endretNavn ->
-                    ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem (always (LagrerNavneendring endretNavn)) }
+                    ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem (LagrerNavneendring endretNavn) }
                     , Effect.none
                     )
 
@@ -159,14 +159,9 @@ initRedigering ( medlem, _ ) =
     RedigererNavn (Teammedlem.navn medlem)
 
 
-oppdaterNavn : String -> ( Teammedlem, TeamMedlemState ) -> TeamMedlemState
-oppdaterNavn oppdatertNavn _ =
-    RedigererNavn oppdatertNavn
-
-
-avbrytNavnRedigering : ( Teammedlem, TeamMedlemState ) -> TeamMedlemState
-avbrytNavnRedigering _ =
-    InitialMedlemState
+replaceMedlemState : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> TeamMedlemState -> List ( Teammedlem, TeamMedlemState )
+replaceMedlemState medlemmer medlemToUpdate teamMedlemState =
+    updateMedlemState medlemmer medlemToUpdate (always teamMedlemState)
 
 
 updateMedlemState : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> (( Teammedlem, TeamMedlemState ) -> TeamMedlemState) -> List ( Teammedlem, TeamMedlemState )
