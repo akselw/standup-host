@@ -176,7 +176,7 @@ updateMedlemState : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> (( Tea
 updateMedlemState medlemmer medlemToUpdate updateFunction =
     List.map
         (\( medlem, state ) ->
-            if medlem == medlemToUpdate then
+            if Teammedlem.id medlem == Teammedlem.id medlemToUpdate then
                 ( medlem, updateFunction ( medlem, state ) )
 
             else
@@ -190,7 +190,7 @@ endretMedlemnavn medlemmer teammedlem =
     let
         medlemOgState =
             medlemmer
-                |> List.Extra.find (\( medlem, _ ) -> medlem == teammedlem)
+                |> List.Extra.find (\( medlem, _ ) -> Teammedlem.id medlem == Teammedlem.id teammedlem)
                 |> Maybe.map Tuple.second
     in
     case medlemOgState of
