@@ -151,7 +151,12 @@ successUpdate apiKey accessToken msg model =
                     , Effect.none
                     )
 
-        NavneendringResponse res ->
+        NavneendringResponse (Ok teammedlem) ->
+            ( { model | medlemmer = updateMedlem model.medlemmer teammedlem }
+            , Effect.none
+            )
+
+        NavneendringResponse (Err err) ->
             ( model
             , Effect.none
             )
@@ -199,6 +204,19 @@ endretMedlemnavn medlemmer teammedlem =
 
         _ ->
             Nothing
+
+
+updateMedlem : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> List ( Teammedlem, TeammedlemState )
+updateMedlem medlemmer medlemToUpdate =
+    List.map
+        (\( medlem, state ) ->
+            if Teammedlem.id medlem == Teammedlem.id medlemToUpdate then
+                ( medlemToUpdate, InitialMedlemState )
+
+            else
+                ( medlem, state )
+        )
+        medlemmer
 
 
 
