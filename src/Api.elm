@@ -100,23 +100,27 @@ updateTeammedlemNavn apiKey msg accessToken teammedlem oppdatertNavn =
             ]
         , body =
             Json.Encode.object [ ( "name", Json.Encode.string oppdatertNavn ) ]
-        , expect =
-            Http.expectJson msg
-                (Json.Decode.list Teammedlem.decoder
-                    |> Json.Decode.andThen
-                        (\decodedList ->
-                            case decodedList of
-                                singleElement :: [] ->
-                                    Json.Decode.succeed singleElement
-
-                                [] ->
-                                    Json.Decode.fail "Listen returnerte flere enn ett element"
-
-                                _ ->
-                                    Json.Decode.fail "Listen returnerte flere enn ett element"
-                        )
-                )
+        , expect = expectSingleElement msg Teammedlem.decoder
         }
+
+
+expectSingleElement : (Result Http.Error a -> msg) -> Decoder a -> Http.Expect msg
+expectSingleElement msg decoder =
+    Http.expectJson msg
+        (Json.Decode.list decoder
+            |> Json.Decode.andThen
+                (\decodedList ->
+                    case decodedList of
+                        singleElement :: [] ->
+                            Json.Decode.succeed singleElement
+
+                        [] ->
+                            Json.Decode.fail "Listen er tom, forventet ett element"
+
+                        _ ->
+                            Json.Decode.fail "Listen inneholdt flere enn ett element"
+                )
+        )
 
 
 getFromDatabase { apiKey, table, query, expect } =
