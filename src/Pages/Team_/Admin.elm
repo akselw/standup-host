@@ -42,11 +42,11 @@ type Model
 
 type alias TeamOwnerModel =
     { team : Team
-    , medlemmer : List ( Teammedlem, TeamMedlemState )
+    , medlemmer : List ( Teammedlem, TeammedlemState )
     }
 
 
-type TeamMedlemState
+type TeammedlemState
     = InitialMedlemState
     | RedigererNavn String
     | LagrerNavneendring String
@@ -111,7 +111,7 @@ update apiKey accessToken msg model =
                     )
 
 
-initTeammedlemmer : Team -> List ( Teammedlem, TeamMedlemState )
+initTeammedlemmer : Team -> List ( Teammedlem, TeammedlemState )
 initTeammedlemmer team =
     team
         |> Team.medlemmer
@@ -154,17 +154,17 @@ successUpdate apiKey accessToken msg model =
             )
 
 
-initRedigering : ( Teammedlem, TeamMedlemState ) -> TeamMedlemState
+initRedigering : ( Teammedlem, TeammedlemState ) -> TeammedlemState
 initRedigering ( medlem, _ ) =
     RedigererNavn (Teammedlem.navn medlem)
 
 
-replaceMedlemState : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> TeamMedlemState -> List ( Teammedlem, TeamMedlemState )
-replaceMedlemState medlemmer medlemToUpdate teamMedlemState =
-    updateMedlemState medlemmer medlemToUpdate (always teamMedlemState)
+replaceMedlemState : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> TeammedlemState -> List ( Teammedlem, TeammedlemState )
+replaceMedlemState medlemmer medlemToUpdate teammedlemState =
+    updateMedlemState medlemmer medlemToUpdate (always teammedlemState)
 
 
-updateMedlemState : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> (( Teammedlem, TeamMedlemState ) -> TeamMedlemState) -> List ( Teammedlem, TeamMedlemState )
+updateMedlemState : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> (( Teammedlem, TeammedlemState ) -> TeammedlemState) -> List ( Teammedlem, TeammedlemState )
 updateMedlemState medlemmer medlemToUpdate updateFunction =
     List.map
         (\( medlem, state ) ->
@@ -177,12 +177,12 @@ updateMedlemState medlemmer medlemToUpdate updateFunction =
         medlemmer
 
 
-endretMedlemnavn : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> Maybe String
+endretMedlemnavn : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> Maybe String
 endretMedlemnavn medlemmer teammedlem =
     let
         medlemOgState =
             medlemmer
-                |> List.Extra.find (\( medlem, state ) -> medlem == teammedlem)
+                |> List.Extra.find (\( medlem, _ ) -> medlem == teammedlem)
                 |> Maybe.map Tuple.second
     in
     case medlemOgState of
@@ -229,7 +229,7 @@ viewInnstillinger model =
     text ""
 
 
-viewTeammedlemmer : List ( Teammedlem, TeamMedlemState ) -> Html SuccessMsg
+viewTeammedlemmer : List ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
 viewTeammedlemmer medlemmer =
     div
         [ Attributes.css
@@ -241,7 +241,7 @@ viewTeammedlemmer medlemmer =
         (List.map viewTeammedlem medlemmer)
 
 
-viewTeammedlem : ( Teammedlem, TeamMedlemState ) -> Html SuccessMsg
+viewTeammedlem : ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
 viewTeammedlem ( medlem, medlemState ) =
     div [ Attributes.css [ Css.padding (Css.px 16) ] ]
         [ case medlemState of
