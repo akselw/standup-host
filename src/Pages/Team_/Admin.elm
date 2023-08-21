@@ -44,6 +44,7 @@ type Model
 type alias TeamOwnerModel =
     { team : Team
     , medlemmer : List ( Teammedlem, TeammedlemState )
+    , leggTilMedlemState : LeggTilMedlemState
     }
 
 
@@ -52,6 +53,12 @@ type TeammedlemState
     | RedigererNavn String
     | LagrerNavneendring String
     | LagrerSletting
+
+
+type LeggTilMedlemState
+    = InitialLeggTilMedlemState
+    | RedigererLeggTilMedlem String
+    | LagrerLeggTilMedlem String
 
 
 init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
@@ -78,6 +85,10 @@ type SuccessMsg
     | NavneendringResponse (Result Http.Error Teammedlem)
     | SlettKnappTrykket Teammedlem
     | SlettMedlemResponse Teammedlem (Result Http.Error ())
+    | StartÅLeggeTilMedlemTrykket
+    | LeggTilMedlemNavnOppdatert String
+    | AvbrytLeggTilMedlemKnappTrykket
+    | LagreLeggTilMedlemKnappTrykket
 
 
 update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
@@ -88,6 +99,7 @@ update apiKey accessToken msg model =
                 TeamOwner
                     { team = team
                     , medlemmer = initTeammedlemmer team
+                    , leggTilMedlemState = InitialLeggTilMedlemState
                     }
 
               else
@@ -178,6 +190,26 @@ successUpdate apiKey accessToken msg model =
             , Effect.none
             )
 
+        StartÅLeggeTilMedlemTrykket ->
+            ( { model | leggTilMedlemState = RedigererLeggTilMedlem "" }
+            , Effect.none
+            )
+
+        LeggTilMedlemNavnOppdatert string ->
+            ( { model | leggTilMedlemState = RedigererLeggTilMedlem string }
+            , Effect.none
+            )
+
+        AvbrytLeggTilMedlemKnappTrykket ->
+            ( { model | leggTilMedlemState = InitialLeggTilMedlemState }
+            , Effect.none
+            )
+
+        LagreLeggTilMedlemKnappTrykket ->
+            ( model
+            , Effect.none
+            )
+
 
 initRedigering : ( Teammedlem, TeammedlemState ) -> TeammedlemState
 initRedigering ( medlem, _ ) =
@@ -258,7 +290,7 @@ view model =
 viewTeamOwner : TeamOwnerModel -> List (Html SuccessMsg)
 viewTeamOwner model =
     [ viewInnstillinger model
-    , viewTeammedlemmer model.medlemmer
+    , viewTeammedlemmer model.leggTilMedlemState model.medlemmer
     ]
 
 
@@ -267,8 +299,8 @@ viewInnstillinger model =
     text ""
 
 
-viewTeammedlemmer : List ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
-viewTeammedlemmer medlemmer =
+viewTeammedlemmer : LeggTilMedlemState -> List ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
+viewTeammedlemmer leggTilMedlemState medlemmer =
     div
         [ Attributes.css
             [ Css.displayFlex
@@ -276,7 +308,11 @@ viewTeammedlemmer medlemmer =
             , Css.property "gap" "8px"
             ]
         ]
-        (List.map viewTeammedlem medlemmer)
+        (List.concat
+            [ List.map viewTeammedlem medlemmer
+            , [ viewLeggTilMedlem leggTilMedlemState ]
+            ]
+        )
 
 
 viewTeammedlem : ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
@@ -306,6 +342,26 @@ viewTeammedlem ( medlem, medlemState ) =
             LagrerSletting ->
                 text "sletter"
         ]
+
+
+viewLeggTilMedlem : LeggTilMedlemState -> Html SuccessMsg
+viewLeggTilMedlem leggTilMedlemState =
+    case leggTilMedlemState of
+        InitialLeggTilMedlemState ->
+            button [ onClick StartÅLeggeTilMedlemTrykket ] [ text "Legg til" ]
+
+        RedigererLeggTilMedlem string ->
+            div []
+                [ label []
+                    [ text "Navn"
+                    , input [ value string, onInput LeggTilMedlemNavnOppdatert ] []
+                    ]
+                , button [ onClick AvbrytLeggTilMedlemKnappTrykket ] [ text "Avbryt" ]
+                , button [ onClick LagreLeggTilMedlemKnappTrykket ] [ text "Lagre" ]
+                ]
+
+        LagrerLeggTilMedlem string ->
+            text "lagrer"
 
 
 
