@@ -2,6 +2,7 @@ module Pages.Team_.Admin exposing (Model, Msg, page)
 
 import AccessToken exposing (AccessToken)
 import Api
+import Auth
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Page exposing (Page)
@@ -12,13 +13,10 @@ import Team exposing (Team)
 import View exposing (View)
 
 
-page : Shared.Model -> Route { team : String } -> Page Model Msg
-page shared route =
+page : Auth.User -> Shared.Model -> Route { team : String } -> Page Model Msg
+page user shared route =
     Page.new
-        { init =
-            shared
-                |> Shared.Model.accessToken
-                |> init shared.apiKey route.params.team
+        { init = init shared.apiKey route.params.team user.accessToken
         , update = update
         , subscriptions = subscriptions
         , view = view
@@ -33,8 +31,8 @@ type alias Model =
     {}
 
 
-init : DatabaseApiToken -> String -> Maybe AccessToken -> () -> ( Model, Effect Msg )
-init apiKey shortName maybeAccessToken () =
+init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
+init apiKey shortName accessToken () =
     ( {}
     , Api.getTeam HentTeamResponse apiKey shortName
     )
