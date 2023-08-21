@@ -10,6 +10,7 @@ import Team exposing (Team)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem
 import Url.Builder as Url
+import UserId
 
 
 getTeam : (Result Team.Error Team -> msg) -> DatabaseApiToken -> String -> Effect msg
@@ -69,11 +70,17 @@ decodeTeamFromList =
 
 getTeamsForUser : DatabaseApiToken -> (Result Http.Error (List TeamSummary) -> msg) -> AccessToken -> Effect msg
 getTeamsForUser apiKey msg accessToken =
+    let
+        userId =
+            accessToken
+                |> AccessToken.userId
+                |> UserId.toString
+    in
     getFromDatabase
         { apiKey = apiKey
         , table = "team"
         , query =
-            [ Url.string "owner_id" ("eq." ++ AccessToken.userId accessToken)
+            [ Url.string "owner_id" ("eq." ++ userId)
             , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
             ]
         , expect = Http.expectJson msg (Json.Decode.list TeamSummary.decoder)

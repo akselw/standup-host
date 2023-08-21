@@ -2,12 +2,13 @@ module AccessToken exposing (AccessToken, init, token, userId)
 
 import Json.Decode exposing (Decoder)
 import Jwt
+import UserId exposing (UserId)
 
 
 type AccessToken
     = AccessToken
         { accessToken : String
-        , userId : String
+        , userId : UserId
         }
 
 
@@ -35,11 +36,11 @@ token (AccessToken accessToken) =
     accessToken.accessToken
 
 
-userId : AccessToken -> String
+userId : AccessToken -> UserId
 userId (AccessToken accessToken) =
     accessToken.userId
 
 
-userIdDecoder : Decoder String
+userIdDecoder : Decoder UserId
 userIdDecoder =
-    Json.Decode.field "sub" Json.Decode.string
+    Json.Decode.field "sub" UserId.decoder
