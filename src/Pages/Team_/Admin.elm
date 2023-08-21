@@ -117,6 +117,7 @@ initTeammedlemmer : Team -> List ( Teammedlem, TeammedlemState )
 initTeammedlemmer team =
     team
         |> Team.medlemmer
+        |> List.sortBy (Teammedlem.navn >> String.toLower)
         |> List.map (\medlem -> ( medlem, InitialMedlemState ))
 
 
