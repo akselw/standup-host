@@ -9,6 +9,7 @@ import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
 import Html.Styled.Events exposing (onClick, onInput)
+import Http
 import List.Extra
 import Page exposing (Page)
 import Route exposing (Route)
@@ -73,6 +74,7 @@ type SuccessMsg
     | AvbrytRedigeringKnappTrykket Teammedlem
     | LagreRedigeringKnappTrykket Teammedlem
     | MedlemNavnOppdatert Teammedlem String
+    | NavneendringResponse (Result Http.Error Teammedlem)
     | SlettKnappTrykket Teammedlem
 
 
@@ -103,7 +105,7 @@ update apiKey accessToken msg model =
                         ( newModel, effect ) =
                             successUpdate apiKey accessToken successMsg teamOwnerModel
                     in
-                    ( TeamOwner newModel, effect )
+                    ( TeamOwner newModel, Effect.map SuccessMsg effect )
 
                 _ ->
                     ( model
@@ -118,7 +120,7 @@ initTeammedlemmer team =
         |> List.map (\medlem -> ( medlem, InitialMedlemState ))
 
 
-successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel -> ( TeamOwnerModel, Effect Msg )
+successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel -> ( TeamOwnerModel, Effect SuccessMsg )
 successUpdate apiKey accessToken msg model =
     case msg of
         RedigerKnappTrykket teammedlem ->
@@ -140,13 +142,18 @@ successUpdate apiKey accessToken msg model =
             case endretMedlemnavn model.medlemmer teammedlem of
                 Just endretNavn ->
                     ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem (LagrerNavneendring endretNavn) }
-                    , Effect.none
+                    , Api.updateTeammedlemNavn apiKey NavneendringResponse accessToken teammedlem endretNavn
                     )
 
                 Nothing ->
                     ( model
                     , Effect.none
                     )
+
+        NavneendringResponse res ->
+            ( model
+            , Effect.none
+            )
 
         SlettKnappTrykket teammedlem ->
             ( model

@@ -1,14 +1,15 @@
-module Api exposing (getTeam, getTeamsForUser)
+module Api exposing (getTeam, getTeamsForUser, updateTeammedlemNavn)
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
+import Json.Encode
 import Task exposing (Task)
 import Team exposing (Team)
 import TeamSummary exposing (TeamSummary)
-import Teammedlem
+import Teammedlem exposing (Teammedlem)
 import Url.Builder as Url
 import UserId
 
@@ -87,13 +88,37 @@ getTeamsForUser apiKey msg accessToken =
         }
 
 
-getFromDatabase :
-    { apiKey : DatabaseApiToken
-    , table : String
-    , query : List Url.QueryParameter
-    , expect : Http.Expect msg
-    }
-    -> Effect msg
+updateTeammedlemNavn : DatabaseApiToken -> (Result Http.Error Teammedlem -> msg) -> AccessToken -> Teammedlem -> String -> Effect msg
+updateTeammedlemNavn apiKey msg accessToken teammedlem oppdatertNavn =
+    updateInDatabase
+        { apiKey = apiKey
+        , accessToken = accessToken
+        , table = "team_member"
+        , query =
+            [ Url.string "id" ("eq." ++ Teammedlem.id teammedlem)
+            , Url.string "select" "name,id"
+            ]
+        , body =
+            Json.Encode.object [ ( "name", Json.Encode.string oppdatertNavn ) ]
+        , expect =
+            Http.expectJson msg
+                (Json.Decode.list Teammedlem.decoder
+                    |> Json.Decode.andThen
+                        (\decodedList ->
+                            case decodedList of
+                                singleElement :: [] ->
+                                    Json.Decode.succeed singleElement
+
+                                [] ->
+                                    Json.Decode.fail "Listen returnerte flere enn ett element"
+
+                                _ ->
+                                    Json.Decode.fail "Listen returnerte flere enn ett element"
+                        )
+                )
+        }
+
+
 getFromDatabase { apiKey, table, query, expect } =
     Http.request
         { method = "GET"
@@ -154,3 +179,33 @@ jsonResolver decoder =
                     Json.Decode.decodeString decoder body
                         |> Result.mapError (Json.Decode.errorToString >> Http.BadBody)
         )
+
+
+updateInDatabase :
+    { apiKey : DatabaseApiToken
+    , accessToken : AccessToken
+    , table : String
+    , query : List Url.QueryParameter
+    , body : Json.Encode.Value
+    , expect : Http.Expect msg
+    }
+    -> Effect msg
+updateInDatabase { apiKey, accessToken, table, query, body, expect } =
+    Http.request
+        { method = "PATCH"
+        , headers =
+            [ Http.header "apikey" (DatabaseApiToken.toString apiKey)
+            , Http.header "Authorization" ("Bearer " ++ AccessToken.token accessToken)
+            , Http.header "Prefer" "return=representation"
+            ]
+        , url =
+            Url.crossOrigin
+                "https://xluvzigagcthclpwrzhj.supabase.co"
+                [ "rest", "v1", table ]
+                query
+        , body = Http.jsonBody body
+        , expect = expect
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+        |> Effect.sendCmd
