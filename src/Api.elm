@@ -1,4 +1,4 @@
-module Api exposing (getTeam, getTeamsForUser, updateTeammedlemNavn)
+module Api exposing (getTeam, getTeamsForUser, slettTeammedlem, updateTeammedlemNavn)
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -101,6 +101,17 @@ updateTeammedlemNavn apiKey msg accessToken teammedlem oppdatertNavn =
         , body =
             Json.Encode.object [ ( "name", Json.Encode.string oppdatertNavn ) ]
         , expect = expectSingleElement msg Teammedlem.decoder
+        }
+
+
+slettTeammedlem : DatabaseApiToken -> (Result Http.Error () -> msg) -> AccessToken -> Teammedlem -> Effect msg
+slettTeammedlem apiKey msg accessToken teammedlem =
+    deleteFromDatabase
+        { apiKey = apiKey
+        , accessToken = accessToken
+        , table = "team_member"
+        , id = Teammedlem.id teammedlem
+        , msg = msg
         }
 
 
@@ -209,6 +220,34 @@ updateInDatabase { apiKey, accessToken, table, query, body, expect } =
                 query
         , body = Http.jsonBody body
         , expect = expect
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+        |> Effect.sendCmd
+
+
+deleteFromDatabase :
+    { apiKey : DatabaseApiToken
+    , accessToken : AccessToken
+    , table : String
+    , id : String
+    , msg : Result Http.Error () -> msg
+    }
+    -> Effect msg
+deleteFromDatabase { apiKey, accessToken, table, id, msg } =
+    Http.request
+        { method = "DELETE"
+        , headers =
+            [ Http.header "apikey" (DatabaseApiToken.toString apiKey)
+            , Http.header "Authorization" ("Bearer " ++ AccessToken.token accessToken)
+            ]
+        , url =
+            Url.crossOrigin
+                "https://xluvzigagcthclpwrzhj.supabase.co"
+                [ "rest", "v1", table ]
+                [ Url.string "id" ("eq." ++ id) ]
+        , body = Http.emptyBody
+        , expect = Http.expectWhatever msg
         , timeout = Nothing
         , tracker = Nothing
         }

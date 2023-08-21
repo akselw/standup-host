@@ -51,6 +51,7 @@ type TeammedlemState
     = InitialMedlemState
     | RedigererNavn String
     | LagrerNavneendring String
+    | LagrerSletting
 
 
 init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
@@ -76,6 +77,7 @@ type SuccessMsg
     | MedlemNavnOppdatert Teammedlem String
     | NavneendringResponse (Result Http.Error Teammedlem)
     | SlettKnappTrykket Teammedlem
+    | SlettMedlemResponse Teammedlem (Result Http.Error ())
 
 
 update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
@@ -162,6 +164,16 @@ successUpdate apiKey accessToken msg model =
             )
 
         SlettKnappTrykket teammedlem ->
+            ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem LagrerSletting }
+            , Api.slettTeammedlem apiKey (SlettMedlemResponse teammedlem) accessToken teammedlem
+            )
+
+        SlettMedlemResponse teammedlem (Ok _) ->
+            ( { model | medlemmer = List.filter (\( medlem, _ ) -> Teammedlem.id teammedlem /= Teammedlem.id medlem) model.medlemmer }
+            , Effect.none
+            )
+
+        SlettMedlemResponse teammedlem (Err _) ->
             ( model
             , Effect.none
             )
@@ -290,6 +302,9 @@ viewTeammedlem ( medlem, medlemState ) =
 
             LagrerNavneendring string ->
                 text "lagrer"
+
+            LagrerSletting ->
+                text "sletter"
         ]
 
 
