@@ -1,8 +1,8 @@
 module Team exposing
     ( Error(..)
     , Team
+    , hasOwner
     , init
-    , isOwner
     , medlemmer
     , navn
     )
@@ -46,9 +46,9 @@ medlemmer (Team team) =
 --- Helper ---
 
 
-isOwner : Team -> UserId -> Bool
-isOwner (Team { summary }) userId =
-    TeamSummary.isOwner summary userId
+hasOwner : Team -> UserId -> Bool
+hasOwner (Team { summary }) userId =
+    TeamSummary.hasOwner summary userId
 
 
 

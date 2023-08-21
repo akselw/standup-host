@@ -58,7 +58,7 @@ update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg 
 update apiKey accessToken msg model =
     case msg of
         HentTeamResponse (Ok team) ->
-            ( if Team.isOwner team (AccessToken.userId accessToken) then
+            ( if Team.hasOwner team (AccessToken.userId accessToken) then
                 TeamOwner { team = team }
 
               else

@@ -1,4 +1,4 @@
-module TeamSummary exposing (TeamSummary, decoder, id, isOwner, navn, shortname)
+module TeamSummary exposing (TeamSummary, decoder, hasOwner, id, navn, shortname)
 
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
@@ -43,8 +43,8 @@ id (TeamSummary team) =
 --- Helper ---
 
 
-isOwner : TeamSummary -> UserId -> Bool
-isOwner (TeamSummary team) userId =
+hasOwner : TeamSummary -> UserId -> Bool
+hasOwner (TeamSummary team) userId =
     UserId.equals team.ownerId userId
 
 
