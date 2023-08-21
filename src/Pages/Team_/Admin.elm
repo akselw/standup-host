@@ -7,8 +7,8 @@ import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attributes
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes as Attributes exposing (value)
+import Html.Styled.Events exposing (onClick, onInput)
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
@@ -47,6 +47,7 @@ type alias TeamOwnerModel =
 
 type TeamMedlemState
     = InitialMedlemState
+    | RedigererNavn String
 
 
 init : DatabaseApiToken -> String -> AccessToken -> () -> ( Model, Effect Msg )
@@ -67,6 +68,7 @@ type Msg
 
 type SuccessMsg
     = RedigerKnappTrykket Teammedlem
+    | MedlemNavnOppdatert Teammedlem String
     | SlettKnappTrykket Teammedlem
 
 
@@ -116,7 +118,12 @@ successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel 
 successUpdate apiKey accessToken msg model =
     case msg of
         RedigerKnappTrykket teammedlem ->
-            ( model
+            ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem initRedigering }
+            , Effect.none
+            )
+
+        MedlemNavnOppdatert teammedlem string ->
+            ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem (oppdaterNavn string) }
             , Effect.none
             )
 
@@ -124,6 +131,29 @@ successUpdate apiKey accessToken msg model =
             ( model
             , Effect.none
             )
+
+
+initRedigering : ( Teammedlem, TeamMedlemState ) -> TeamMedlemState
+initRedigering ( medlem, _ ) =
+    RedigererNavn (Teammedlem.navn medlem)
+
+
+oppdaterNavn : String -> ( Teammedlem, TeamMedlemState ) -> TeamMedlemState
+oppdaterNavn oppdatertNavn _ =
+    RedigererNavn oppdatertNavn
+
+
+updateMedlemState : List ( Teammedlem, TeamMedlemState ) -> Teammedlem -> (( Teammedlem, TeamMedlemState ) -> TeamMedlemState) -> List ( Teammedlem, TeamMedlemState )
+updateMedlemState medlemmer medlemToUpdate updateFunction =
+    List.map
+        (\( medlem, state ) ->
+            if medlem == medlemToUpdate then
+                ( medlem, updateFunction ( medlem, state ) )
+
+            else
+                ( medlem, state )
+        )
+        medlemmer
 
 
 
@@ -183,6 +213,14 @@ viewTeammedlem ( medlem, medlemState ) =
                     [ text (Teammedlem.navn medlem)
                     , button [ onClick (RedigerKnappTrykket medlem) ] [ text "Rediger" ]
                     , button [ onClick (SlettKnappTrykket medlem) ] [ text "Slett" ]
+                    ]
+
+            RedigererNavn string ->
+                div []
+                    [ label []
+                        [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
+                        , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
+                        ]
                     ]
         ]
 
