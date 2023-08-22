@@ -1,4 +1,4 @@
-module DatabaseApiToken exposing (DatabaseApiToken, decoder, init, toString)
+module DatabaseApiToken exposing (DatabaseApiToken, decoder, init, invalidToken, toString)
 
 import Json.Decode exposing (Decoder)
 
@@ -15,6 +15,15 @@ init s =
 toString : DatabaseApiToken -> String
 toString (DatabaseApiToken s) =
     s
+
+
+
+---
+
+
+invalidToken : DatabaseApiToken
+invalidToken =
+    DatabaseApiToken "invalid token"
 
 
 

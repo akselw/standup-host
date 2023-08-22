@@ -81,7 +81,12 @@ init flagsResult route =
                     )
 
         Err _ ->
-            Debug.todo "Finn ut hva som skal skje om flags ikke er der"
+            ( { apiKey = DatabaseApiToken.invalidToken
+              , accessToken = NoToken
+              }
+            , Effect.none
+              -- TODO: Logg dette
+            )
 
 
 
