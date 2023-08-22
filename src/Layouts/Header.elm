@@ -3,6 +3,7 @@ module Layouts.Header exposing (Model, Msg, Props, layout)
 import AccessToken exposing (AccessToken)
 import Css
 import Css.Global
+import Css.Media
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (class)
@@ -78,7 +79,12 @@ view : Maybe AccessToken -> { toContentMsg : Msg -> contentMsg, content : View c
 view accessToken { toContentMsg, model, content } =
     { title = content.title
     , body =
-        [ Css.Global.global [ Css.Global.selector "body" [ Css.margin Css.zero ] ]
+        [ Css.Global.global
+            [ Css.Global.selector "body"
+                [ Css.margin Css.zero
+                , Css.fontFamilies [ "Source Sans Pro", "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", "sans-serif" ]
+                ]
+            ]
         , viewHeader accessToken
             |> Html.map toContentMsg
         , div [] content.body
@@ -98,7 +104,16 @@ viewHeader maybeAccessToken =
             , Css.padding2 Css.zero (Css.px 16)
             ]
         ]
-        [ a [ RouteExtras.href Route.Path.Home_ ] [ text "Hvem har standup?" ]
+        [ a
+            [ RouteExtras.href Route.Path.Home_
+            , Attributes.css
+                [ Css.fontSize (Css.px 18)
+                , Css.fontWeight (Css.int 700)
+                , Css.color (Css.hex "040F16")
+                , Css.textDecoration Css.none
+                ]
+            ]
+            [ text "Hvem har standup?" ]
         , case maybeAccessToken of
             Just accessToken ->
                 viewLoggedInButtons accessToken
@@ -110,9 +125,41 @@ viewHeader maybeAccessToken =
 
 viewLoggedInButtons : AccessToken -> Html Msg
 viewLoggedInButtons accessToken =
-    nav []
-        [ a [ RouteExtras.href Route.Path.MineTeam ] [ text "Mine team" ]
-        , button [ onClick LoggUtKnappTrykket ] [ text "Logg ut" ]
+    nav
+        [ Attributes.css
+            [ Css.displayFlex
+            , Css.flexDirection Css.row
+            , Css.alignItems Css.center
+            , Css.property "gap" "16px"
+            , Css.Media.withMediaQuery [ "screen and (min-width: 756px)" ]
+                [ Css.property "gap" "32px"
+                ]
+            ]
+        ]
+        [ a
+            [ RouteExtras.href Route.Path.MineTeam
+            , Attributes.css
+                [ Css.color (Css.hex "040F16")
+                , Css.textDecoration Css.none
+                ]
+            ]
+            [ text "Mine team" ]
+        , button
+            [ onClick LoggUtKnappTrykket
+            , Attributes.css
+                [ Css.fontFamilies [ "Source Sans Pro", "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", "sans-serif" ]
+                , Css.fontSize (Css.px 14)
+                , Css.letterSpacing (Css.px 0.4)
+                , Css.color (Css.hex "FFFFFF")
+                , Css.backgroundColor (Css.hex "0D2F44")
+                , Css.border Css.zero
+                , Css.borderRadius (Css.rem 0.375)
+                , Css.padding2 (Css.rem 0.625) (Css.rem 0.875)
+                , Css.cursor Css.pointer
+                , Css.hover [ Css.backgroundColor (Css.hex "334155") ]
+                ]
+            ]
+            [ text "Logg ut" ]
         ]
 
 
