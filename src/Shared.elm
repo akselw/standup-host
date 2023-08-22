@@ -15,12 +15,16 @@ module Shared exposing
 import AccessToken
 import Authentication
 import DatabaseApiToken exposing (DatabaseApiToken)
+import Dict
 import Effect exposing (Effect)
 import Json.Decode
 import Json.Decode.Pipeline exposing (required)
 import Jwt
 import LocalStorage
+import Process
 import Route exposing (Route)
+import Route.Path
+import RouteExtras
 import Shared.Model exposing (AccessTokenStatus(..))
 import Shared.Msg exposing (Msg(..))
 import Task
@@ -122,8 +126,18 @@ update route msg model =
             )
 
         Logout ->
+            ( { model | accessToken = LoggingOut }
+            , Effect.batch
+                [ LocalStorage.removeItem "hvem-har-standup:access_token"
+                , Process.sleep 100
+                    |> Task.perform (always ResetLoggingOutState)
+                    |> Effect.sendCmd
+                ]
+            )
+
+        ResetLoggingOutState ->
             ( { model | accessToken = NoToken }
-            , LocalStorage.removeItem "hvem-har-standup:access_token"
+            , Effect.none
             )
 
 

@@ -30,4 +30,5 @@ accessToken model =
 type AccessTokenStatus
     = CheckingToken
     | Token AccessToken
+    | LoggingOut
     | NoToken

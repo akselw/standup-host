@@ -6,6 +6,7 @@ import Authentication
 import Dict
 import Route exposing (Route)
 import Route.Path
+import RouteExtras
 import Shared
 import Shared.Model exposing (AccessTokenStatus(..))
 import View exposing (View)
@@ -26,6 +27,17 @@ onPageLoad shared route =
         Token accessToken ->
             -- TODO: Legg til validering av om accesstokenet er gyldig? Evt. la det bli håndtert i shared
             Auth.Action.loadPageWithUser { accessToken = accessToken }
+
+        LoggingOut ->
+            if RouteExtras.isProtected route.path then
+                Auth.Action.pushRoute
+                    { path = Route.Path.Home_
+                    , query = Dict.empty
+                    , hash = Nothing
+                    }
+
+            else
+                Auth.Action.showLoadingPage (View.fromString "")
 
         NoToken ->
             Auth.Action.pushRoute
