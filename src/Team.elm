@@ -63,6 +63,5 @@ hasOwner (Team { summary }) userId =
 
 type Error
     = FantIkkeTeam
-    | IngenTeammedlemmer
     | HttpErrorForTeam Http.Error
     | HttpErrorForTeammedlemmer Http.Error
