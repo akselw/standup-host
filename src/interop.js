@@ -33,10 +33,6 @@ export const onReady = async ({ app, env }) => {
                     },
                 })
                 return
-            case "LOGOUT":
-                const { error: error2 } = await supabase.auth.signOut()
-                console.log({ error2 })
-                return
             default:
                 return
         }

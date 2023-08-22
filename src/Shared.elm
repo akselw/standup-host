@@ -123,12 +123,8 @@ update route msg model =
 
         Logout ->
             ( { model | accessToken = NoToken }
-            , Effect.batch
-                [ Authentication.logout
-                    |> Effect.sendCmd
-                , LocalStorage.removeItem "hvem-har-standup:access_token"
-                    |> Effect.sendCmd
-                ]
+            , LocalStorage.removeItem "hvem-har-standup:access_token"
+                |> Effect.sendCmd
             )
 
 
