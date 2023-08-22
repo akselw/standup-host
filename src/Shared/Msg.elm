@@ -16,3 +16,4 @@ own file, so they can be imported by `Effect.elm`
 type Msg
     = AccessTokenChanged String
     | AccessTokenExpiredChecked (Result Jwt.JwtError Authentication.AccessTokenStatus)
+    | Logout

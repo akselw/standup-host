@@ -19,6 +19,7 @@ import Effect exposing (Effect)
 import Json.Decode
 import Json.Decode.Pipeline exposing (required)
 import Jwt
+import LocalStorage
 import Route exposing (Route)
 import Shared.Model exposing (AccessTokenStatus(..))
 import Shared.Msg exposing (Msg(..))
@@ -118,6 +119,16 @@ update route msg model =
         AccessTokenExpiredChecked _ ->
             ( { model | accessToken = NoToken }
             , Effect.none
+            )
+
+        Logout ->
+            ( { model | accessToken = NoToken }
+            , Effect.batch
+                [ Authentication.logout
+                    |> Effect.sendCmd
+                , LocalStorage.removeItem "hvem-har-standup:access_token"
+                    |> Effect.sendCmd
+                ]
             )
 
 

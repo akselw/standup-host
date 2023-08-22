@@ -1,4 +1,4 @@
-port module LocalStorage exposing (setItem)
+port module LocalStorage exposing (removeItem, setItem)
 
 import Json.Encode
 
@@ -12,5 +12,14 @@ setItem key value =
         [ ( "type", Json.Encode.string "SET_ITEM" )
         , ( "key", Json.Encode.string key )
         , ( "value", value )
+        ]
+        |> localStorage
+
+
+removeItem : String -> Cmd msg
+removeItem key =
+    Json.Encode.object
+        [ ( "type", Json.Encode.string "REMOVE_ITEM" )
+        , ( "key", Json.Encode.string key )
         ]
         |> localStorage

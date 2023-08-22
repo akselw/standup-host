@@ -1,4 +1,4 @@
-port module Authentication exposing (AccessTokenStatus(..), checkAccessToken, login, loginWithRedirectUrl, redirectKey)
+port module Authentication exposing (AccessTokenStatus(..), checkAccessToken, login, loginWithRedirectUrl, logout, redirectKey)
 
 import AccessToken exposing (AccessToken)
 import Json.Encode
@@ -49,4 +49,11 @@ loginWithRedirectUrl path =
         [ ( "type", Json.Encode.string "LOGIN" )
         , ( "redirectUrl", Json.Encode.string (Path.toString path) )
         ]
+        |> authentication
+
+
+logout : Cmd msg
+logout =
+    Json.Encode.object
+        [ ( "type", Json.Encode.string "LOGOUT" ) ]
         |> authentication

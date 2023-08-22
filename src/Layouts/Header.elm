@@ -4,8 +4,9 @@ import AccessToken exposing (AccessToken)
 import Css
 import Css.Global
 import Effect exposing (Effect)
-import Html.Styled exposing (..)
+import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (class)
+import Html.Styled.Events exposing (onClick)
 import Layout exposing (Layout)
 import Route exposing (Route)
 import Route.Path
@@ -52,15 +53,15 @@ init _ =
 
 
 type Msg
-    = ReplaceMe
+    = LoggUtKnappTrykket
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
-        ReplaceMe ->
+        LoggUtKnappTrykket ->
             ( model
-            , Effect.none
+            , Effect.logout
             )
 
 
@@ -79,12 +80,13 @@ view accessToken { toContentMsg, model, content } =
     , body =
         [ Css.Global.global [ Css.Global.selector "body" [ Css.margin Css.zero ] ]
         , viewHeader accessToken
+            |> Html.map toContentMsg
         , div [] content.body
         ]
     }
 
 
-viewHeader : Maybe AccessToken -> Html msg
+viewHeader : Maybe AccessToken -> Html Msg
 viewHeader maybeAccessToken =
     header
         [ Attributes.css
@@ -106,11 +108,11 @@ viewHeader maybeAccessToken =
         ]
 
 
-viewLoggedInButtons : AccessToken -> Html msg
+viewLoggedInButtons : AccessToken -> Html Msg
 viewLoggedInButtons accessToken =
     nav []
         [ a [ RouteExtras.href Route.Path.MinSide ] [ text "Mine team" ]
-        , a [ Attributes.href "#" ] [ text "Logg ut" ]
+        , button [ onClick LoggUtKnappTrykket ] [ text "Logg ut" ]
         ]
 
 

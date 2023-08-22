@@ -4,6 +4,7 @@ module Effect exposing
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
     , updateAccessToken
+    , logout
     , map, toCmd
     )
 
@@ -14,6 +15,7 @@ module Effect exposing
 @docs sendCmd, sendMsg
 @docs pushRoute, replaceRoute, loadExternalUrl
 @docs updateAccessToken
+@docs logout
 
 @docs map, toCmd
 
@@ -119,6 +121,11 @@ loadExternalUrl =
 updateAccessToken : String -> Effect msg
 updateAccessToken accessToken =
     SendSharedMsg (Shared.Msg.AccessTokenChanged accessToken)
+
+
+logout : Effect msg
+logout =
+    SendSharedMsg Shared.Msg.Logout
 
 
 

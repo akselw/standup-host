@@ -33,6 +33,10 @@ export const onReady = async ({ app, env }) => {
                     },
                 })
                 return
+            case "LOGOUT":
+                const { error: error2 } = await supabase.auth.signOut()
+                console.log({ error2 })
+                return
             default:
                 return
         }
@@ -40,6 +44,10 @@ export const onReady = async ({ app, env }) => {
     app.ports.localStorage.subscribe((action) => {
         switch (action.type) {
             case "SET_ITEM":
+                // TODO: Endre til at key her er en JS-const, samme som brukes i flags
+                localStorage.setItem(action.key, action.value)
+                return
+            case "REMOVE_ITEM":
                 // TODO: Endre til at key her er en JS-const, samme som brukes i flags
                 localStorage.setItem(action.key, action.value)
                 return
