@@ -146,6 +146,7 @@ viewLoggedInButtons accessToken =
             ]
             [ text "Mine team" ]
         , Button.button LoggUtKnappTrykket "Logg ut"
+            |> Button.withVariant Button.Tertiary
             |> Button.toHtml
         ]
 
