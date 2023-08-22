@@ -1,11 +1,17 @@
 module Layouts.Header exposing (Model, Msg, Props, layout)
 
+import AccessToken exposing (AccessToken)
+import Css
+import Css.Global
 import Effect exposing (Effect)
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (class)
+import Html.Styled.Attributes as Attributes exposing (class)
 import Layout exposing (Layout)
 import Route exposing (Route)
+import Route.Path
+import RouteExtras
 import Shared
+import Shared.Model
 import View exposing (View)
 
 
@@ -18,7 +24,10 @@ layout props shared route =
     Layout.new
         { init = init
         , update = update
-        , view = view
+        , view =
+            shared
+                |> Shared.Model.accessToken
+                |> view
         , subscriptions = subscriptions
         }
 
@@ -64,11 +73,49 @@ subscriptions model =
 -- VIEW
 
 
-view : { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
-view { toContentMsg, model, content } =
+view : Maybe AccessToken -> { toContentMsg : Msg -> contentMsg, content : View contentMsg, model : Model } -> View contentMsg
+view accessToken { toContentMsg, model, content } =
     { title = content.title
     , body =
-        [ text "Header"
-        , div [ class "page" ] content.body
+        [ Css.Global.global [ Css.Global.selector "body" [ Css.margin Css.zero ] ]
+        , viewHeader accessToken
+        , div [] content.body
         ]
     }
+
+
+viewHeader : Maybe AccessToken -> Html msg
+viewHeader maybeAccessToken =
+    header
+        [ Attributes.css
+            [ Css.displayFlex
+            , Css.flexDirection Css.row
+            , Css.justifyContent Css.spaceBetween
+            , Css.alignItems Css.center
+            , Css.minHeight (Css.px 64)
+            , Css.padding2 Css.zero (Css.px 16)
+            ]
+        ]
+        [ a [ RouteExtras.href Route.Path.Home_ ] [ text "Hvem har standup?" ]
+        , case maybeAccessToken of
+            Just accessToken ->
+                viewLoggedInButtons accessToken
+
+            Nothing ->
+                viewNonLoggedInButtons
+        ]
+
+
+viewLoggedInButtons : AccessToken -> Html msg
+viewLoggedInButtons accessToken =
+    nav []
+        [ a [ RouteExtras.href Route.Path.MinSide ] [ text "Mine team" ]
+        , a [ Attributes.href "#" ] [ text "Logg ut" ]
+        ]
+
+
+viewNonLoggedInButtons : Html msg
+viewNonLoggedInButtons =
+    nav []
+        [ a [ Attributes.href "#" ] [ text "Logg inn" ]
+        ]
