@@ -15,6 +15,7 @@ import RouteExtras
 import Shared
 import Shared.Model
 import View exposing (View)
+import View.Button as Button
 
 
 type alias Props =
@@ -144,22 +145,8 @@ viewLoggedInButtons accessToken =
                 ]
             ]
             [ text "Mine team" ]
-        , button
-            [ onClick LoggUtKnappTrykket
-            , Attributes.css
-                [ Css.fontFamilies [ "Source Sans Pro", "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", "sans-serif" ]
-                , Css.fontSize (Css.px 14)
-                , Css.letterSpacing (Css.px 0.4)
-                , Css.color (Css.hex "FFFFFF")
-                , Css.backgroundColor (Css.hex "0D2F44")
-                , Css.border Css.zero
-                , Css.borderRadius (Css.rem 0.375)
-                , Css.padding2 (Css.rem 0.625) (Css.rem 0.875)
-                , Css.cursor Css.pointer
-                , Css.hover [ Css.backgroundColor (Css.hex "334155") ]
-                ]
-            ]
-            [ text "Logg ut" ]
+        , Button.button LoggUtKnappTrykket "Logg ut"
+            |> Button.toHtml
         ]
 
 
