@@ -29,13 +29,13 @@ page user shared route =
         , subscriptions = subscriptions
         , view = view
         }
-        |> Page.withLayout (toLayout user)
+        |> Page.withLayout toLayout
 
 
 {-| Use the sidebar layout on this page
 -}
-toLayout : Auth.User -> Model -> Layouts.Layout Msg
-toLayout user model =
+toLayout : Model -> Layouts.Layout Msg
+toLayout model =
     Layouts.Header {}
 
 

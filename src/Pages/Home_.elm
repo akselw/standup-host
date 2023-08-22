@@ -3,6 +3,7 @@ module Pages.Home_ exposing (..)
 import Effect exposing (Effect)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attributes
+import Layouts
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
@@ -18,6 +19,14 @@ page shared route =
         , subscriptions = subscriptions
         , view = view
         }
+        |> Page.withLayout toLayout
+
+
+{-| Use the sidebar layout on this page
+-}
+toLayout : Model -> Layouts.Layout Msg
+toLayout model =
+    Layouts.Header {}
 
 
 
@@ -66,5 +75,5 @@ subscriptions model =
 view : Model -> View Msg
 view model =
     { title = "Pages.Home_"
-    , body = [ a [ Route.Path.href Route.Path.Login |> Attributes.fromUnstyled ] [ text "Log in" ] ]
+    , body = []
     }

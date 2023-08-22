@@ -117,5 +117,5 @@ viewLoggedInButtons accessToken =
 viewNonLoggedInButtons : Html msg
 viewNonLoggedInButtons =
     nav []
-        [ a [ Attributes.href "#" ] [ text "Logg inn" ]
+        [ a [ RouteExtras.href Route.Path.Login ] [ text "Logg inn" ]
         ]

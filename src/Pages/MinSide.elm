@@ -8,6 +8,7 @@ import Effect exposing (Effect)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attributes
 import Http
+import Layouts
 import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
@@ -24,6 +25,14 @@ page user shared route =
         , subscriptions = subscriptions
         , view = view
         }
+        |> Page.withLayout toLayout
+
+
+{-| Use the sidebar layout on this page
+-}
+toLayout : Model -> Layouts.Layout Msg
+toLayout model =
+    Layouts.Header {}
 
 
 

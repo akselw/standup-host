@@ -8,6 +8,7 @@ import Effect exposing (Effect)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes as Attributes exposing (type_)
 import Html.Styled.Events exposing (onClick)
+import Layouts
 import Page exposing (Page)
 import Process
 import Random
@@ -361,3 +362,11 @@ page shared route =
         , subscriptions = always Sub.none
         , view = view
         }
+        |> Page.withLayout toLayout
+
+
+{-| Use the sidebar layout on this page
+-}
+toLayout : Model -> Layouts.Layout Msg
+toLayout model =
+    Layouts.Header {}
