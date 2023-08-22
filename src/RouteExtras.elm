@@ -21,7 +21,7 @@ isProtected path =
         Login ->
             True
 
-        MinSide ->
+        MineTeam ->
             True
 
         Oauth ->

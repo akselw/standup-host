@@ -37,7 +37,7 @@ init shared route () =
             route.query
                 |> Dict.get Authentication.redirectKey
                 |> Maybe.andThen Route.Path.fromString
-                |> Maybe.withDefault Route.Path.MinSide
+                |> Maybe.withDefault Route.Path.MineTeam
                 |> (\redirectPath ->
                         Effect.pushRoute
                             { path = redirectPath

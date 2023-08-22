@@ -111,7 +111,7 @@ viewHeader maybeAccessToken =
 viewLoggedInButtons : AccessToken -> Html Msg
 viewLoggedInButtons accessToken =
     nav []
-        [ a [ RouteExtras.href Route.Path.MinSide ] [ text "Mine team" ]
+        [ a [ RouteExtras.href Route.Path.MineTeam ] [ text "Mine team" ]
         , button [ onClick LoggUtKnappTrykket ] [ text "Logg ut" ]
         ]
 

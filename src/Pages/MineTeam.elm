@@ -1,4 +1,4 @@
-module Pages.MinSide exposing (Model, Msg, page)
+module Pages.MineTeam exposing (Model, Msg, page)
 
 import Api
 import Auth

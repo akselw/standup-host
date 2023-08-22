@@ -45,7 +45,7 @@ init route () =
 
         redirectPath =
             queryRedirectToRoute route
-                |> Maybe.withDefault Route.Path.MinSide
+                |> Maybe.withDefault Route.Path.MineTeam
     in
     case Dict.get "access_token" optionDict of
         Just accessToken ->
