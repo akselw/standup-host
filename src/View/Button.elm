@@ -29,7 +29,7 @@ toHtml (Button options) =
     Html.button
         [ onClick options.onClick
         , Attributes.css
-            [ Css.fontFamilies [ "Source Sans Pro", "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", "sans-serif" ]
+            [ Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
             , Css.fontSize (Css.px 14)
             , Css.letterSpacing (Css.px 1.2)
             , Css.color (Css.hex "FFFFFF")

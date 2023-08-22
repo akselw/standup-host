@@ -83,7 +83,7 @@ view accessToken { toContentMsg, model, content } =
         [ Css.Global.global
             [ Css.Global.selector "body"
                 [ Css.margin Css.zero
-                , Css.fontFamilies [ "Source Sans Pro", "Trebuchet MS", "Lucida Grande", "Bitstream Vera Sans", "Helvetica Neue", "sans-serif" ]
+                , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
                 ]
             ]
         , viewHeader accessToken
@@ -153,5 +153,21 @@ viewLoggedInButtons accessToken =
 viewNonLoggedInButtons : Html msg
 viewNonLoggedInButtons =
     nav []
-        [ a [ RouteExtras.href Route.Path.Login ] [ text "Logg inn" ]
+        [ a
+            [ RouteExtras.href Route.Path.Login
+            , Attributes.css
+                [ Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
+                , Css.fontSize (Css.px 14)
+                , Css.letterSpacing (Css.px 1.2)
+                , Css.color (Css.hex "FFFFFF")
+                , Css.backgroundColor (Css.hex "4F46E5")
+                , Css.border Css.zero
+                , Css.borderRadius (Css.rem 0.375)
+                , Css.padding2 (Css.rem 0.625) (Css.rem 0.875)
+                , Css.cursor Css.pointer
+                , Css.hover [ Css.backgroundColor (Css.hex "6366f1") ]
+                , Css.textDecoration Css.none
+                ]
+            ]
+            [ text "Logg inn" ]
         ]
