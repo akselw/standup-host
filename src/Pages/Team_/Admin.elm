@@ -10,6 +10,7 @@ import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
+import Layouts
 import List.Extra
 import Page exposing (Page)
 import Route exposing (Route)
@@ -28,6 +29,14 @@ page user shared route =
         , subscriptions = subscriptions
         , view = view
         }
+        |> Page.withLayout (toLayout user)
+
+
+{-| Use the sidebar layout on this page
+-}
+toLayout : Auth.User -> Model -> Layouts.Layout Msg
+toLayout user model =
+    Layouts.Header {}
 
 
 
