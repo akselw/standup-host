@@ -30,7 +30,7 @@ isProtected path =
         Team_ record ->
             False
 
-        Team__Admin record ->
+        Team__Settings record ->
             True
 
         NotFound_ ->

@@ -1,4 +1,4 @@
-module Pages.Team_.Admin exposing (Model, Msg, page)
+module Pages.Team_.Settings exposing (Model, Msg, page)
 
 import AccessToken exposing (AccessToken)
 import Api
