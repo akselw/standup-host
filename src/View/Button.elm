@@ -1,4 +1,4 @@
-module View.Button exposing (Button, Variant(..), button, toHtml, withVariant)
+module View.Button exposing (Button, Size(..), Variant(..), button, toHtml, withSize, withVariant)
 
 import Css
 import Html.Styled as Html exposing (Html, text)
@@ -12,6 +12,7 @@ button onClick label =
         { label = label
         , onClick = onClick
         , variant = Primary
+        , size = Medium
         }
 
 
@@ -23,6 +24,7 @@ type alias Options msg =
     { label : String
     , onClick : msg
     , variant : Variant
+    , size : Size
     }
 
 
@@ -32,6 +34,11 @@ type Variant
     | Tertiary
 
 
+type Size
+    = Medium
+    | Large
+
+
 
 --- Options ---
 
@@ -39,6 +46,11 @@ type Variant
 withVariant : Variant -> Button msg -> Button msg
 withVariant variant (Button options) =
     Button { options | variant = variant }
+
+
+withSize : Size -> Button msg -> Button msg
+withSize size (Button options) =
+    Button { options | size = size }
 
 
 
@@ -88,13 +100,23 @@ border : Variant -> Css.Style
 border variant =
     case variant of
         Primary ->
-            Css.border Css.zero
+            Css.batch []
 
         Secondary ->
-            Css.border3 (Css.px 1) Css.solid (Css.hex "979FAF")
+            Css.boxShadow6 Css.inset (Css.px 0) (Css.px 0) (Css.px 0) (Css.px 1) (Css.hex "979FAF")
 
         Tertiary ->
-            Css.border Css.zero
+            Css.batch []
+
+
+padding : Size -> Css.Style
+padding size =
+    case size of
+        Medium ->
+            Css.padding2 (Css.rem 0.5) (Css.rem 0.75)
+
+        Large ->
+            Css.padding2 (Css.rem 0.625) (Css.rem 0.875)
 
 
 toHtml : Button msg -> Html msg
@@ -107,9 +129,10 @@ toHtml (Button options) =
             , Css.letterSpacing (Css.px 1.2)
             , Css.color (textColor options.variant)
             , Css.backgroundColor (backgroundColor options.variant)
+            , Css.border Css.zero
             , border options.variant
             , Css.borderRadius (Css.rem 0.375)
-            , Css.padding2 (Css.rem 0.625) (Css.rem 0.875)
+            , padding options.size
             , Css.cursor Css.pointer
             , Css.hover [ Css.backgroundColor (hoverColor options.variant) ]
             ]

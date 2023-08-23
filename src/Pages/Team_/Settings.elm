@@ -19,6 +19,7 @@ import Shared.Model
 import Team exposing (Team)
 import Teammedlem exposing (Teammedlem)
 import View exposing (View)
+import View.Button as Button
 
 
 page : Auth.User -> Shared.Model -> Route { team : String } -> Page Model Msg
@@ -362,8 +363,12 @@ viewTeammedlem ( medlem, medlemState ) =
             InitialMedlemState ->
                 div []
                     [ text (Teammedlem.navn medlem)
-                    , button [ onClick (RedigerKnappTrykket medlem) ] [ text "Rediger" ]
-                    , button [ onClick (SlettKnappTrykket medlem) ] [ text "Slett" ]
+                    , Button.button (RedigerKnappTrykket medlem) "Rediger"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
+                    , Button.button (SlettKnappTrykket medlem) "Slett"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
                     ]
 
             RedigererNavn string ->
@@ -372,8 +377,11 @@ viewTeammedlem ( medlem, medlemState ) =
                         [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
                         , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
                         ]
-                    , button [ onClick (AvbrytRedigeringKnappTrykket medlem) ] [ text "Avbryt" ]
-                    , button [ onClick (LagreRedigeringKnappTrykket medlem) ] [ text "Lagre" ]
+                    , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
+                    , Button.button (LagreRedigeringKnappTrykket medlem) "Lagre"
+                        |> Button.toHtml
                     ]
 
             LagrerNavneendring string ->
