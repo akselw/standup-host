@@ -88,8 +88,9 @@ view accessToken { toContentMsg, model, content } =
             ]
         , viewHeader accessToken
             |> Html.map toContentMsg
-        , div [] content.body
         ]
+            ++ content.body
+            ++ [ viewFooter ]
     }
 
 
@@ -172,4 +173,23 @@ viewNonLoggedInButtons =
                 ]
             ]
             [ text "Logg inn" ]
+        ]
+
+
+viewFooter : Html msg
+viewFooter =
+    footer
+        [ Attributes.css
+            [ Css.marginTop (Css.px 128)
+            , Css.marginBottom (Css.px 40)
+            , Css.displayFlex
+            , Css.flexDirection Css.column
+            , Css.alignItems Css.center
+            , Css.justifyContent Css.end
+            , Css.fontSize (Css.px 13)
+            , Css.color (Css.hex "979FAF")
+            ]
+        ]
+        [ span [] [ text "Laget av" ]
+        , span [] [ text "Aksel Wester" ]
         ]

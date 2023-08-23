@@ -34,7 +34,7 @@ page user shared route =
         |> Page.withLayout toLayout
 
 
-{-| Use the sidebar layout on this page
+{-| Use the header layout on this page
 -}
 toLayout : Model -> Layouts.Layout Msg
 toLayout model =
