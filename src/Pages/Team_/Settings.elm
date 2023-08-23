@@ -8,7 +8,7 @@ import DatabaseApiToken exposing (DatabaseApiToken)
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
-import Html.Styled.Events exposing (onClick, onInput)
+import Html.Styled.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Layouts
 import List.Extra
@@ -371,38 +371,35 @@ viewTeammedlemmer leggTilMedlemState medlemmer =
 
 viewTeammedlem : ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
 viewTeammedlem ( medlem, medlemState ) =
-    div
-        [ Attributes.css
-            [ Css.padding2 (Css.px 16) (Css.px 24)
-            , Css.borderTop3 (Css.px 1) Css.solid borderColor
-            , Css.firstOfType [ Css.borderWidth Css.zero ]
-            , Css.displayFlex
-            , Css.flexDirection Css.row
-            , Css.alignItems Css.center
-            , Css.property "gap" "16px"
-            ]
-        ]
+    viewTeammedlemListeElement
         (case medlemState of
             InitialMedlemState ->
-                [ span [ Attributes.css [ Css.flex (Css.num 1) ] ] [ text (Teammedlem.navn medlem) ]
-                , Button.button (RedigerKnappTrykket medlem) "Rediger"
-                    |> Button.withVariant Button.Secondary
-                    |> Button.toHtml
-                , Button.button (SlettKnappTrykket medlem) "Slett"
-                    |> Button.withVariant Button.Secondary
-                    |> Button.toHtml
+                [ div [ Attributes.css teammedlemListeElementLayout ]
+                    [ span [ Attributes.css [ Css.flex (Css.num 1) ] ] [ text (Teammedlem.navn medlem) ]
+                    , Button.button (RedigerKnappTrykket medlem) "Rediger"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
+                    , Button.button (SlettKnappTrykket medlem) "Slett"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
+                    ]
                 ]
 
             RedigererNavn string ->
-                [ label []
-                    [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
-                    , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
+                [ form
+                    [ onSubmit (LagreRedigeringKnappTrykket medlem)
+                    , Attributes.css teammedlemListeElementLayout
                     ]
-                , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
-                    |> Button.withVariant Button.Secondary
-                    |> Button.toHtml
-                , Button.button (LagreRedigeringKnappTrykket medlem) "Lagre"
-                    |> Button.toHtml
+                    [ label [ Attributes.css [ Css.flex (Css.num 1) ] ]
+                        [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
+                        , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
+                        ]
+                    , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
+                    , Button.submit "Lagre"
+                        |> Button.toHtml
+                    ]
                 ]
 
             LagrerNavneendring string ->
@@ -413,6 +410,28 @@ viewTeammedlem ( medlem, medlemState ) =
         )
 
 
+viewTeammedlemListeElement : List (Html msg) -> Html msg
+viewTeammedlemListeElement children =
+    div
+        [ Attributes.css
+            [ Css.padding2 (Css.px 16) (Css.px 24)
+            , Css.borderTop3 (Css.px 1) Css.solid borderColor
+            , Css.firstOfType [ Css.borderWidth Css.zero ]
+            ]
+        ]
+        children
+
+
+teammedlemListeElementLayout : List Css.Style
+teammedlemListeElementLayout =
+    [ Css.displayFlex
+    , Css.flexDirection Css.row
+    , Css.alignItems Css.center
+    , Css.property "gap" "16px"
+    , Css.width (Css.pct 100)
+    ]
+
+
 viewLeggTilMedlemInput : LeggTilMedlemState -> Html SuccessMsg
 viewLeggTilMedlemInput leggTilMedlemState =
     case leggTilMedlemState of
@@ -420,17 +439,26 @@ viewLeggTilMedlemInput leggTilMedlemState =
             text ""
 
         RedigererLeggTilMedlem string ->
-            div []
-                [ label []
-                    [ text "Navn"
-                    , input [ value string, onInput LeggTilMedlemNavnOppdatert ] []
+            viewTeammedlemListeElement
+                [ form
+                    [ onSubmit LagreLeggTilMedlemKnappTrykket
+                    , Attributes.css teammedlemListeElementLayout
                     ]
-                , button [ onClick AvbrytLeggTilMedlemKnappTrykket ] [ text "Avbryt" ]
-                , button [ onClick LagreLeggTilMedlemKnappTrykket ] [ text "Legg til" ]
+                    [ label [ Attributes.css [ Css.flex (Css.num 1) ] ]
+                        [ text "Navn"
+                        , input [ value string, onInput LeggTilMedlemNavnOppdatert ] []
+                        ]
+                    , Button.button AvbrytLeggTilMedlemKnappTrykket "Avbryt"
+                        |> Button.withVariant Button.Secondary
+                        |> Button.toHtml
+                    , Button.submit "Legg til"
+                        |> Button.toHtml
+                    ]
                 ]
 
         LagrerLeggTilMedlem string ->
-            text "lagrer"
+            viewTeammedlemListeElement
+                [ text "lagrer" ]
 
 
 viewLeggTilMedlemKnapp : LeggTilMedlemState -> Html SuccessMsg

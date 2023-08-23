@@ -1,4 +1,4 @@
-module View.Button exposing (Button, Size(..), Variant(..), button, toHtml, withSize, withVariant)
+module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withSize, withVariant)
 
 import Css
 import Html.Styled as Html exposing (Html, text)
@@ -10,9 +10,19 @@ button : msg -> String -> Button msg
 button onClick label =
     Button
         { label = label
-        , onClick = onClick
         , variant = Primary
         , size = Medium
+        , type_ = TypeButton onClick
+        }
+
+
+submit : String -> Button msg
+submit label =
+    Button
+        { label = label
+        , variant = Primary
+        , size = Medium
+        , type_ = TypeSubmit
         }
 
 
@@ -20,11 +30,16 @@ type Button msg
     = Button (Options msg)
 
 
+type ButtonType msg
+    = TypeButton msg
+    | TypeSubmit
+
+
 type alias Options msg =
     { label : String
-    , onClick : msg
     , variant : Variant
     , size : Size
+    , type_ : ButtonType msg
     }
 
 
@@ -122,7 +137,18 @@ padding size =
 toHtml : Button msg -> Html msg
 toHtml (Button options) =
     Html.button
-        [ onClick options.onClick
+        [ case options.type_ of
+            TypeButton _ ->
+                Attributes.type_ "button"
+
+            TypeSubmit ->
+                Attributes.type_ "submit"
+        , case options.type_ of
+            TypeButton onClickMsg ->
+                onClick onClickMsg
+
+            TypeSubmit ->
+                Attributes.classList []
         , Attributes.css
             [ Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
             , Css.fontSize (Css.px 14)
