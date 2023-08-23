@@ -330,8 +330,10 @@ view model =
 
 viewTeamOwner : TeamOwnerModel -> List (Html SuccessMsg)
 viewTeamOwner model =
-    [ viewInnstillinger model
-    , viewTeammedlemmer model.leggTilMedlemState model.medlemmer
+    [ div [ Attributes.css [ Css.maxWidth (Css.px 632), Css.margin Css.auto, Css.padding2 Css.zero (Css.px 16) ] ]
+        [ viewInnstillinger model
+        , viewTeammedlemmer model.leggTilMedlemState model.medlemmer
+        ]
     ]
 
 
