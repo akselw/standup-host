@@ -342,63 +342,82 @@ viewInnstillinger model =
     text ""
 
 
+borderColor : Css.Color
+borderColor =
+    Css.hex "979FAF"
+
+
 viewTeammedlemmer : LeggTilMedlemState -> List ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
 viewTeammedlemmer leggTilMedlemState medlemmer =
-    div
-        [ Attributes.css
-            [ Css.displayFlex
-            , Css.flexDirection Css.column
-            , Css.property "gap" "8px"
+    div []
+        [ h2 [ Attributes.css [ Css.marginTop Css.zero, Css.marginBottom (Css.px 16) ] ] [ text "Teammedlemmer" ]
+        , div
+            [ Attributes.css
+                [ Css.displayFlex
+                , Css.flexDirection Css.column
+                , Css.border3 (Css.px 1) Css.solid borderColor
+                , Css.borderRadius (Css.px 6)
+                , Css.marginBottom (Css.px 16)
+                ]
             ]
+            (List.concat
+                [ List.map viewTeammedlem medlemmer
+                , [ viewLeggTilMedlemInput leggTilMedlemState ]
+                ]
+            )
+        , viewLeggTilMedlemKnapp leggTilMedlemState
         ]
-        (List.concat
-            [ List.map viewTeammedlem medlemmer
-            , [ viewLeggTilMedlem leggTilMedlemState ]
-            ]
-        )
 
 
 viewTeammedlem : ( Teammedlem, TeammedlemState ) -> Html SuccessMsg
 viewTeammedlem ( medlem, medlemState ) =
-    div [ Attributes.css [ Css.padding (Css.px 16) ] ]
-        [ case medlemState of
+    div
+        [ Attributes.css
+            [ Css.padding2 (Css.px 16) (Css.px 24)
+            , Css.borderTop3 (Css.px 1) Css.solid borderColor
+            , Css.firstOfType [ Css.borderWidth Css.zero ]
+            , Css.displayFlex
+            , Css.flexDirection Css.row
+            , Css.alignItems Css.center
+            , Css.property "gap" "16px"
+            ]
+        ]
+        (case medlemState of
             InitialMedlemState ->
-                div []
-                    [ text (Teammedlem.navn medlem)
-                    , Button.button (RedigerKnappTrykket medlem) "Rediger"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.toHtml
-                    , Button.button (SlettKnappTrykket medlem) "Slett"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.toHtml
-                    ]
+                [ span [ Attributes.css [ Css.flex (Css.num 1) ] ] [ text (Teammedlem.navn medlem) ]
+                , Button.button (RedigerKnappTrykket medlem) "Rediger"
+                    |> Button.withVariant Button.Secondary
+                    |> Button.toHtml
+                , Button.button (SlettKnappTrykket medlem) "Slett"
+                    |> Button.withVariant Button.Secondary
+                    |> Button.toHtml
+                ]
 
             RedigererNavn string ->
-                div []
-                    [ label []
-                        [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
-                        , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
-                        ]
-                    , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.toHtml
-                    , Button.button (LagreRedigeringKnappTrykket medlem) "Lagre"
-                        |> Button.toHtml
+                [ label []
+                    [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
+                    , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
                     ]
+                , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
+                    |> Button.withVariant Button.Secondary
+                    |> Button.toHtml
+                , Button.button (LagreRedigeringKnappTrykket medlem) "Lagre"
+                    |> Button.toHtml
+                ]
 
             LagrerNavneendring string ->
-                text "lagrer"
+                [ text "lagrer" ]
 
             LagrerSletting ->
-                text "sletter"
-        ]
+                [ text "sletter" ]
+        )
 
 
-viewLeggTilMedlem : LeggTilMedlemState -> Html SuccessMsg
-viewLeggTilMedlem leggTilMedlemState =
+viewLeggTilMedlemInput : LeggTilMedlemState -> Html SuccessMsg
+viewLeggTilMedlemInput leggTilMedlemState =
     case leggTilMedlemState of
         InitialLeggTilMedlemState ->
-            button [ onClick StartÅLeggeTilMedlemTrykket ] [ text "Legg til" ]
+            text ""
 
         RedigererLeggTilMedlem string ->
             div []
@@ -412,6 +431,18 @@ viewLeggTilMedlem leggTilMedlemState =
 
         LagrerLeggTilMedlem string ->
             text "lagrer"
+
+
+viewLeggTilMedlemKnapp : LeggTilMedlemState -> Html SuccessMsg
+viewLeggTilMedlemKnapp leggTilMedlemState =
+    case leggTilMedlemState of
+        InitialLeggTilMedlemState ->
+            Button.button StartÅLeggeTilMedlemTrykket "Legg til"
+                |> Button.withSize Button.Large
+                |> Button.toHtml
+
+        _ ->
+            text ""
 
 
 
