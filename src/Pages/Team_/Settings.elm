@@ -394,13 +394,13 @@ viewTeammedlem ( medlem, medlemState ) =
                     [ TextInput.input { msg = MedlemNavnOppdatert medlem, label = "Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"" } string
                         |> TextInput.withCss [ Css.flex (Css.num 1) ]
                         |> TextInput.toHtml
-                    , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.withCss [ Css.alignSelf Css.end ]
-                        |> Button.toHtml
-                    , Button.submit "Lagre"
-                        |> Button.withCss [ Css.alignSelf Css.end ]
-                        |> Button.toHtml
+                    , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.justifyContent Css.spaceBetween, Css.property "gap" "12px" ] ]
+                        [ Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
+                            |> Button.withVariant Button.Secondary
+                            |> Button.toHtml
+                        , Button.submit "Lagre"
+                            |> Button.toHtml
+                        ]
                     ]
                 ]
 
@@ -428,9 +428,11 @@ teammedlemListeElementLayout : List Css.Style
 teammedlemListeElementLayout =
     [ Css.displayFlex
     , Css.flexDirection Css.row
+    , Css.flexWrap Css.wrap
     , Css.alignItems Css.center
-    , Css.property "gap" "16px"
+    , Css.property "gap" "12px"
     , Css.width (Css.pct 100)
+    , Css.justifyContent Css.end
     ]
 
 
@@ -449,13 +451,13 @@ viewLeggTilMedlemInput leggTilMedlemState =
                     [ TextInput.input { msg = LeggTilMedlemNavnOppdatert, label = "Navn" } string
                         |> TextInput.withCss [ Css.flex (Css.num 1) ]
                         |> TextInput.toHtml
-                    , Button.button AvbrytLeggTilMedlemKnappTrykket "Avbryt"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.withCss [ Css.alignSelf Css.end ]
-                        |> Button.toHtml
-                    , Button.submit "Legg til"
-                        |> Button.withCss [ Css.alignSelf Css.end ]
-                        |> Button.toHtml
+                    , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.justifyContent Css.spaceBetween, Css.property "gap" "12px" ] ]
+                        [ Button.button AvbrytLeggTilMedlemKnappTrykket "Avbryt"
+                            |> Button.withVariant Button.Secondary
+                            |> Button.toHtml
+                        , Button.submit "Legg til"
+                            |> Button.toHtml
+                        ]
                     ]
                 ]
 
