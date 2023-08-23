@@ -391,14 +391,15 @@ viewTeammedlem ( medlem, medlemState ) =
                     [ onSubmit (LagreRedigeringKnappTrykket medlem)
                     , Attributes.css teammedlemListeElementLayout
                     ]
-                    [ label [ Attributes.css [ Css.flex (Css.num 1) ] ]
-                        [ text ("Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"")
-                        , input [ value string, onInput (MedlemNavnOppdatert medlem) ] []
-                        ]
+                    [ TextInput.input { msg = MedlemNavnOppdatert medlem, label = "Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"" } string
+                        |> TextInput.withCss [ Css.flex (Css.num 1) ]
+                        |> TextInput.toHtml
                     , Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
                         |> Button.withVariant Button.Secondary
+                        |> Button.withCss [ Css.alignSelf Css.end ]
                         |> Button.toHtml
                     , Button.submit "Lagre"
+                        |> Button.withCss [ Css.alignSelf Css.end ]
                         |> Button.toHtml
                     ]
                 ]
