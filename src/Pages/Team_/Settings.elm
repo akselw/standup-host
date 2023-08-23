@@ -20,6 +20,7 @@ import Team exposing (Team)
 import Teammedlem exposing (Teammedlem)
 import View exposing (View)
 import View.Button as Button
+import View.TextInput as TextInput
 
 
 page : Auth.User -> Shared.Model -> Route { team : String } -> Page Model Msg
@@ -444,14 +445,15 @@ viewLeggTilMedlemInput leggTilMedlemState =
                     [ onSubmit LagreLeggTilMedlemKnappTrykket
                     , Attributes.css teammedlemListeElementLayout
                     ]
-                    [ label [ Attributes.css [ Css.flex (Css.num 1) ] ]
-                        [ text "Navn"
-                        , input [ value string, onInput LeggTilMedlemNavnOppdatert ] []
-                        ]
+                    [ TextInput.input { msg = LeggTilMedlemNavnOppdatert, label = "Navn" } string
+                        |> TextInput.withCss [ Css.flex (Css.num 1) ]
+                        |> TextInput.toHtml
                     , Button.button AvbrytLeggTilMedlemKnappTrykket "Avbryt"
                         |> Button.withVariant Button.Secondary
+                        |> Button.withCss [ Css.alignSelf Css.end ]
                         |> Button.toHtml
                     , Button.submit "Legg til"
+                        |> Button.withCss [ Css.alignSelf Css.end ]
                         |> Button.toHtml
                     ]
                 ]

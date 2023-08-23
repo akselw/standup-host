@@ -1,4 +1,4 @@
-module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withSize, withVariant)
+module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withCss, withSize, withVariant)
 
 import Css
 import Html.Styled as Html exposing (Html, text)
@@ -13,6 +13,7 @@ button onClick label =
         , variant = Primary
         , size = Medium
         , type_ = TypeButton onClick
+        , css = []
         }
 
 
@@ -23,6 +24,7 @@ submit label =
         , variant = Primary
         , size = Medium
         , type_ = TypeSubmit
+        , css = []
         }
 
 
@@ -30,17 +32,18 @@ type Button msg
     = Button (Options msg)
 
 
-type ButtonType msg
-    = TypeButton msg
-    | TypeSubmit
-
-
 type alias Options msg =
     { label : String
     , variant : Variant
     , size : Size
     , type_ : ButtonType msg
+    , css : List Css.Style
     }
+
+
+type ButtonType msg
+    = TypeButton msg
+    | TypeSubmit
 
 
 type Variant
@@ -66,6 +69,11 @@ withVariant variant (Button options) =
 withSize : Size -> Button msg -> Button msg
 withSize size (Button options) =
     Button { options | size = size }
+
+
+withCss : List Css.Style -> Button msg -> Button msg
+withCss styles (Button options) =
+    Button { options | css = options.css ++ styles }
 
 
 
@@ -150,7 +158,8 @@ toHtml (Button options) =
             TypeSubmit ->
                 Attributes.classList []
         , Attributes.css
-            [ Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
+            [ Css.batch options.css
+            , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
             , Css.fontSize (Css.px 14)
             , Css.letterSpacing (Css.px 1.2)
             , Css.color (textColor options.variant)
