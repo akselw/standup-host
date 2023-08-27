@@ -6,6 +6,7 @@ module Team exposing
     , init
     , medlemmer
     , navn
+    , shortname
     )
 
 import Http
@@ -36,6 +37,11 @@ init summary teammedlemmer =
 navn : Team -> String
 navn (Team { summary }) =
     TeamSummary.navn summary
+
+
+shortname : Team -> String
+shortname (Team { summary }) =
+    TeamSummary.shortname summary
 
 
 id : Team -> String
