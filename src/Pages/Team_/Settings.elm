@@ -100,7 +100,8 @@ type Msg
 
 
 type SuccessMsg
-    = RedigerKnappTrykket Teammedlem
+    = EndreInnstilingerKnappTrykket
+    | RedigerKnappTrykket Teammedlem
     | AvbrytRedigeringKnappTrykket Teammedlem
     | LagreRedigeringKnappTrykket Teammedlem
     | MedlemNavnOppdatert Teammedlem String
@@ -162,6 +163,9 @@ initTeammedlemmer team =
 successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel -> ( TeamOwnerModel, Effect SuccessMsg )
 successUpdate apiKey accessToken msg model =
     case msg of
+        EndreInnstilingerKnappTrykket ->
+            ( model, Effect.none )
+
         RedigerKnappTrykket teammedlem ->
             ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem initRedigering }
             , Effect.none
@@ -370,7 +374,7 @@ viewInnstillingerSection model =
         ]
 
 
-viewInnstillinger : Team -> Html msg
+viewInnstillinger : Team -> Html SuccessMsg
 viewInnstillinger team =
     let
         teamPath =
@@ -379,10 +383,24 @@ viewInnstillinger team =
         url =
             "https://hvemharstandup.no" ++ Route.Path.toString teamPath
     in
-    div [ Attributes.css [ Css.displayFlex, Css.flexDirection Css.column, Css.property "gap" "16px", Css.marginBottom (Css.px 40) ] ]
+    div
+        [ Attributes.css
+            [ Css.displayFlex
+            , Css.flexDirection Css.column
+            , Css.property "gap" "16px"
+            , Css.padding2 (Css.px 16) (Css.px 24)
+            , Css.border3 (Css.px 1) Css.solid borderColor
+            , Css.borderRadius (Css.px 6)
+            , Css.marginBottom (Css.px 40)
+            ]
+        ]
         [ viewIndividualSetting { label = "Navn", value = text (Team.navn team) }
         , viewIndividualSetting { label = "Shortname", value = text (Team.shortname team) }
         , viewIndividualSetting { label = "URL", value = a [ RouteExtras.href teamPath ] [ text url ] }
+        , Button.button EndreInnstilingerKnappTrykket "Endre"
+            |> Button.withVariant Button.Secondary
+            |> Button.withCss [ Css.alignSelf Css.end ]
+            |> Button.toHtml
         ]
 
 
