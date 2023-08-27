@@ -14,9 +14,12 @@ import Layouts
 import List.Extra
 import Page exposing (Page)
 import Route exposing (Route)
+import Route.Path
+import RouteExtras
 import Shared
 import Shared.Model
 import Team exposing (Team)
+import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
 import Teammedlem exposing (Teammedlem)
 import View exposing (View)
 import View.Button as Button
@@ -54,9 +57,17 @@ type Model
 
 type alias TeamOwnerModel =
     { team : Team
+    , formState : FormState
     , medlemmer : List ( Teammedlem, TeammedlemState )
     , leggTilMedlemState : LeggTilMedlemState
     }
+
+
+type FormState
+    = NoForm
+    | Editing TeamSettingsForm
+    | SavingForm ValidatedTeamSettingsForm
+    | SavingFormFailure ValidatedTeamSettingsForm Http.Error
 
 
 type TeammedlemState
@@ -110,6 +121,7 @@ update apiKey accessToken msg model =
             ( if Team.hasOwner team (AccessToken.userId accessToken) then
                 TeamOwner
                     { team = team
+                    , formState = NoForm
                     , medlemmer = initTeammedlemmer team
                     , leggTilMedlemState = InitialLeggTilMedlemState
                     }
@@ -332,15 +344,75 @@ view model =
 viewTeamOwner : TeamOwnerModel -> List (Html SuccessMsg)
 viewTeamOwner model =
     [ div [ Attributes.css [ Css.maxWidth (Css.px 632), Css.margin Css.auto, Css.padding2 Css.zero (Css.px 16) ] ]
-        [ viewInnstillinger model
+        [ h1 [] [ text (Team.navn model.team) ]
+        , viewInnstillingerSection model
         , viewTeammedlemmer model.leggTilMedlemState model.medlemmer
         ]
     ]
 
 
-viewInnstillinger : TeamOwnerModel -> Html SuccessMsg
-viewInnstillinger model =
-    text ""
+viewInnstillingerSection : TeamOwnerModel -> Html SuccessMsg
+viewInnstillingerSection model =
+    div []
+        [ h2 [] [ text "Innstillinger" ]
+        , case model.formState of
+            NoForm ->
+                viewInnstillinger model.team
+
+            Editing form ->
+                viewForm form
+
+            SavingForm validatedForm ->
+                viewSavingForm validatedForm
+
+            SavingFormFailure validatedForm error ->
+                viewFormFailure validatedForm error
+        ]
+
+
+viewInnstillinger : Team -> Html msg
+viewInnstillinger team =
+    let
+        teamPath =
+            Route.Path.Team_ { team = Team.shortname team }
+
+        url =
+            "https://hvemharstandup.no" ++ Route.Path.toString teamPath
+    in
+    div [ Attributes.css [ Css.displayFlex, Css.flexDirection Css.column, Css.property "gap" "16px", Css.marginBottom (Css.px 40) ] ]
+        [ viewIndividualSetting { label = "Navn", value = text (Team.navn team) }
+        , viewIndividualSetting { label = "Shortname", value = text (Team.shortname team) }
+        , viewIndividualSetting { label = "URL", value = a [ RouteExtras.href teamPath ] [ text url ] }
+        ]
+
+
+viewIndividualSetting : { label : String, value : Html msg } -> Html msg
+viewIndividualSetting { label, value } =
+    div
+        [ Attributes.css
+            [ Css.displayFlex
+            , Css.flexDirection Css.column
+            , Css.property "gap" "2px"
+            ]
+        ]
+        [ span [ Attributes.css [ Css.fontWeight (Css.int 700) ] ] [ text label ]
+        , span [] [ value ]
+        ]
+
+
+viewForm : TeamSettingsForm -> Html SuccessMsg
+viewForm form =
+    text "viewForm"
+
+
+viewSavingForm : ValidatedTeamSettingsForm -> Html msg
+viewSavingForm validatedForm =
+    text "viewSavingForm"
+
+
+viewFormFailure : ValidatedTeamSettingsForm -> Http.Error -> Html SuccessMsg
+viewFormFailure validatedForm error =
+    text "viewFormFailure"
 
 
 borderColor : Css.Color
