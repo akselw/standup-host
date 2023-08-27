@@ -9,6 +9,7 @@ module TeamSettingsForm exposing
     , oppdaterShortname
     , shortname
     , validate
+    , visAlleFeilmeldinger
     , visFeilmeldingNavn
     , visFeilmeldingShortname
     )
@@ -114,6 +115,13 @@ visFeilmeldingNavn (Form form) =
 visFeilmeldingShortname : TeamSettingsForm -> TeamSettingsForm
 visFeilmeldingShortname (Form form) =
     Form { form | visFeilmeldingShortname = True }
+
+
+visAlleFeilmeldinger : TeamSettingsForm -> TeamSettingsForm
+visAlleFeilmeldinger form =
+    form
+        |> visFeilmeldingNavn
+        |> visFeilmeldingShortname
 
 
 

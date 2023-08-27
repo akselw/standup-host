@@ -101,6 +101,10 @@ type Msg
 
 type SuccessMsg
     = EndreInnstilingerKnappTrykket
+    | NavnOppdatert String
+    | ShortnameOppdatert String
+    | LagreSkjemaEndringerTrykket
+    | AvbrytSkjemaendringTrykket
     | RedigerKnappTrykket Teammedlem
     | AvbrytRedigeringKnappTrykket Teammedlem
     | LagreRedigeringKnappTrykket Teammedlem
@@ -164,7 +168,41 @@ successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel 
 successUpdate apiKey accessToken msg model =
     case msg of
         EndreInnstilingerKnappTrykket ->
-            ( model, Effect.none )
+            ( { model | formState = Editing (TeamSettingsForm.init model.team) }
+            , Effect.none
+            )
+
+        NavnOppdatert string ->
+            case model.formState of
+                Editing form ->
+                    ( { model | formState = Editing (TeamSettingsForm.oppdaterNavn string form) }, Effect.none )
+
+                _ ->
+                    ( model, Effect.none )
+
+        ShortnameOppdatert string ->
+            case model.formState of
+                Editing form ->
+                    ( { model | formState = Editing (TeamSettingsForm.oppdaterShortname string form) }, Effect.none )
+
+                _ ->
+                    ( model, Effect.none )
+
+        LagreSkjemaEndringerTrykket ->
+            case model.formState of
+                Editing form ->
+                    case TeamSettingsForm.validate form of
+                        Just validated ->
+                            ( { model | formState = SavingForm validated }, Effect.none )
+
+                        Nothing ->
+                            ( { model | formState = Editing (TeamSettingsForm.visAlleFeilmeldinger form) }, Effect.none )
+
+                _ ->
+                    ( model, Effect.none )
+
+        AvbrytSkjemaendringTrykket ->
+            ( { model | formState = NoForm }, Effect.none )
 
         RedigerKnappTrykket teammedlem ->
             ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem initRedigering }
@@ -420,7 +458,34 @@ viewIndividualSetting { label, value } =
 
 viewForm : TeamSettingsForm -> Html SuccessMsg
 viewForm form =
-    text "viewForm"
+    Html.form
+        [ Attributes.css
+            [ Css.displayFlex
+            , Css.flexDirection Css.column
+            , Css.property "gap" "16px"
+            , Css.padding2 (Css.px 16) (Css.px 24)
+            , Css.border3 (Css.px 1) Css.solid borderColor
+            , Css.borderRadius (Css.px 6)
+            , Css.marginBottom (Css.px 40)
+            ]
+        ]
+        [ form
+            |> TeamSettingsForm.navn
+            |> TextInput.input { label = "Navn", msg = NavnOppdatert }
+            |> TextInput.toHtml
+        , form
+            |> TeamSettingsForm.shortname
+            |> TextInput.input { label = "Shortname", msg = ShortnameOppdatert }
+            |> TextInput.toHtml
+        , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.shortname form) }
+        , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]
+            [ Button.button AvbrytSkjemaendringTrykket "Avbryt"
+                |> Button.withVariant Button.Secondary
+                |> Button.toHtml
+            , Button.button LagreSkjemaEndringerTrykket "Lagre"
+                |> Button.toHtml
+            ]
+        ]
 
 
 viewSavingForm : ValidatedTeamSettingsForm -> Html msg
