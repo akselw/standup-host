@@ -65,6 +65,8 @@ toHtml (TextInput options) =
                 [ Css.padding2 (Css.px 8) (Css.px 16)
                 , Css.borderRadius (Css.px 6)
                 , Css.border3 (Css.px 1) Css.solid (Css.hex "979FAF")
+                , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
+                , Css.fontSize (Css.px 14)
                 ]
             ]
             []
