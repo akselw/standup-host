@@ -7,6 +7,7 @@ module Team exposing
     , medlemmer
     , navn
     , shortname
+    , updateTeamSummary
     )
 
 import Http
@@ -53,6 +54,19 @@ id (Team { summary }) =
 medlemmer : Team -> List Teammedlem
 medlemmer (Team team) =
     team.medlemmer
+
+
+
+--- Oppdatering ---
+
+
+updateTeamSummary : Team -> TeamSummary -> Team
+updateTeamSummary (Team team) teamSummary =
+    if TeamSummary.id team.summary == TeamSummary.id teamSummary then
+        Team { team | summary = teamSummary }
+
+    else
+        Team team
 
 
 

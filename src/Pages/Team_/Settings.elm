@@ -209,7 +209,22 @@ successUpdate apiKey accessToken msg model =
             ( { model | formState = NoForm }, Effect.none )
 
         UpdateTeamSummaryResponse res ->
-            ( model, Effect.none )
+            case model.formState of
+                SavingForm form ->
+                    case res of
+                        Ok teamSummary ->
+                            ( { model
+                                | team = Team.updateTeamSummary model.team teamSummary
+                                , formState = NoForm
+                              }
+                            , Effect.none
+                            )
+
+                        Err error ->
+                            ( { model | formState = SavingFormFailure form error }, Effect.none )
+
+                _ ->
+                    ( model, Effect.none )
 
         RedigerKnappTrykket teammedlem ->
             ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem initRedigering }
