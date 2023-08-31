@@ -1,4 +1,4 @@
-module Api exposing (getTeam, getTeamsForUser, leggTilTeammedlem, slettTeammedlem, updateTeammedlemNavn)
+module Api exposing (getTeam, getTeamsForUser, leggTilTeammedlem, slettTeammedlem, updateTeam, updateTeammedlemNavn)
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -8,6 +8,7 @@ import Json.Decode exposing (Decoder)
 import Json.Encode
 import Task exposing (Task)
 import Team exposing (Team)
+import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
 import Url.Builder as Url
@@ -128,6 +129,21 @@ leggTilTeammedlem apiKey msg accessToken team navn =
                 , ( "team_id", Json.Encode.string (Team.id team) )
                 ]
         , expect = expectSingleElement msg Teammedlem.decoder
+        }
+
+
+updateTeam : DatabaseApiToken -> (Result Http.Error TeamSummary -> msg) -> AccessToken -> ValidatedTeamSettingsForm -> Effect msg
+updateTeam apiKey msg accessToken form =
+    updateInDatabase
+        { apiKey = apiKey
+        , accessToken = accessToken
+        , table = "team"
+        , query =
+            [ Url.string "id" ("eq." ++ TeamSettingsForm.teamId form)
+            , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            ]
+        , body = TeamSettingsForm.encode form
+        , expect = expectSingleElement msg TeamSummary.decoder
         }
 
 

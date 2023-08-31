@@ -1,6 +1,7 @@
 module TeamSettingsForm exposing
     ( TeamSettingsForm
     , ValidatedTeamSettingsForm
+    , encode
     , feilmeldingNavn
     , feilmeldingShortname
     , init
@@ -8,12 +9,14 @@ module TeamSettingsForm exposing
     , oppdaterNavn
     , oppdaterShortname
     , shortname
+    , teamId
     , validate
     , visAlleFeilmeldinger
     , visFeilmeldingNavn
     , visFeilmeldingShortname
     )
 
+import Json.Encode
 import Team exposing (Team)
 
 
@@ -23,6 +26,7 @@ type TeamSettingsForm
         , shortname : String
         , visFeilmeldingNavn : Bool
         , visFeilmeldingShortname : Bool
+        , teamId : String
         }
 
 
@@ -33,6 +37,7 @@ init team =
         , shortname = Team.shortname team
         , visFeilmeldingNavn = False
         , visFeilmeldingShortname = False
+        , teamId = Team.id team
         }
 
 
@@ -133,6 +138,7 @@ type ValidatedTeamSettingsForm
     = ValidatedForm
         { navn : String
         , shortname : String
+        , teamId : String
         }
 
 
@@ -143,8 +149,26 @@ validate (Form form) =
             (ValidatedForm
                 { navn = form.navn
                 , shortname = form.shortname
+                , teamId = form.teamId
                 }
             )
 
     else
         Nothing
+
+
+teamId : ValidatedTeamSettingsForm -> String
+teamId (ValidatedForm form) =
+    form.teamId
+
+
+
+--- Encoding ---
+
+
+encode : ValidatedTeamSettingsForm -> Json.Encode.Value
+encode (ValidatedForm form) =
+    Json.Encode.object
+        [ ( "name", Json.Encode.string form.navn )
+        , ( "shortname", Json.Encode.string form.shortname )
+        ]

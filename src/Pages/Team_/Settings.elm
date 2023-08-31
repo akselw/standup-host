@@ -20,6 +20,7 @@ import Shared
 import Shared.Model
 import Team exposing (Team)
 import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
+import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
 import View exposing (View)
 import View.Button as Button
@@ -105,6 +106,7 @@ type SuccessMsg
     | ShortnameOppdatert String
     | LagreSkjemaEndringerTrykket
     | AvbrytSkjemaendringTrykket
+    | UpdateTeamSummaryResponse (Result Http.Error TeamSummary)
     | RedigerKnappTrykket Teammedlem
     | AvbrytRedigeringKnappTrykket Teammedlem
     | LagreRedigeringKnappTrykket Teammedlem
@@ -193,7 +195,9 @@ successUpdate apiKey accessToken msg model =
                 Editing form ->
                     case TeamSettingsForm.validate form of
                         Just validated ->
-                            ( { model | formState = SavingForm validated }, Effect.none )
+                            ( { model | formState = SavingForm validated }
+                            , Api.updateTeam apiKey UpdateTeamSummaryResponse accessToken validated
+                            )
 
                         Nothing ->
                             ( { model | formState = Editing (TeamSettingsForm.visAlleFeilmeldinger form) }, Effect.none )
@@ -203,6 +207,9 @@ successUpdate apiKey accessToken msg model =
 
         AvbrytSkjemaendringTrykket ->
             ( { model | formState = NoForm }, Effect.none )
+
+        UpdateTeamSummaryResponse res ->
+            ( model, Effect.none )
 
         RedigerKnappTrykket teammedlem ->
             ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem initRedigering }
