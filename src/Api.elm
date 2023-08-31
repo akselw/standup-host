@@ -8,6 +8,7 @@ import Json.Decode exposing (Decoder)
 import Json.Encode
 import Task exposing (Task)
 import Team exposing (Team)
+import TeamId
 import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
@@ -40,7 +41,7 @@ getTeammedlemmer apiKey teamSummaryResult =
                 { apiKey = apiKey
                 , table = "team_member"
                 , query =
-                    [ Url.string "team_id" ("eq." ++ TeamSummary.id teamSummary)
+                    [ Url.string "team_id" ("eq." ++ (TeamSummary.id >> TeamId.toString) teamSummary)
                     , Url.string "select" "name,id"
                     ]
                 , decoder =
@@ -126,7 +127,7 @@ leggTilTeammedlem apiKey msg accessToken team navn =
         , body =
             Json.Encode.object
                 [ ( "name", Json.Encode.string navn )
-                , ( "team_id", Json.Encode.string (Team.id team) )
+                , ( "team_id", (Team.id >> TeamId.encode) team )
                 ]
         , expect = expectSingleElement msg Teammedlem.decoder
         }

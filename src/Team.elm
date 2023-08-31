@@ -10,6 +10,7 @@ module Team exposing
     )
 
 import Http
+import TeamId exposing (TeamId)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
 import UserId exposing (UserId)
@@ -44,7 +45,7 @@ shortname (Team { summary }) =
     TeamSummary.shortname summary
 
 
-id : Team -> String
+id : Team -> TeamId
 id (Team { summary }) =
     TeamSummary.id summary
 

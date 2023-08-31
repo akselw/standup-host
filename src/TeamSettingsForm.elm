@@ -18,6 +18,7 @@ module TeamSettingsForm exposing
 
 import Json.Encode
 import Team exposing (Team)
+import TeamId exposing (TeamId)
 
 
 type TeamSettingsForm
@@ -26,7 +27,7 @@ type TeamSettingsForm
         , shortname : String
         , visFeilmeldingNavn : Bool
         , visFeilmeldingShortname : Bool
-        , teamId : String
+        , teamId : TeamId
         }
 
 
@@ -138,7 +139,7 @@ type ValidatedTeamSettingsForm
     = ValidatedForm
         { navn : String
         , shortname : String
-        , teamId : String
+        , teamId : TeamId
         }
 
 
@@ -159,7 +160,7 @@ validate (Form form) =
 
 teamId : ValidatedTeamSettingsForm -> String
 teamId (ValidatedForm form) =
-    form.teamId
+    TeamId.toString form.teamId
 
 
 

@@ -3,6 +3,7 @@ module TeamSummary exposing (TeamSummary, decoder, hasOwner, id, navn, shortname
 import Json.Decode exposing (Decoder)
 import Json.Decode.Pipeline exposing (required)
 import RotationLength exposing (RotationLength)
+import TeamId exposing (TeamId)
 import UserId exposing (UserId)
 
 
@@ -13,7 +14,7 @@ type TeamSummary
 type alias TeamSummaryInfo =
     { navn : String
     , shortname : String
-    , id : String
+    , id : TeamId
     , rotationLength : RotationLength
     , properRandom : Bool
     , ownerId : UserId
@@ -34,7 +35,7 @@ shortname (TeamSummary team) =
     team.shortname
 
 
-id : TeamSummary -> String
+id : TeamSummary -> TeamId
 id (TeamSummary team) =
     team.id
 
@@ -57,7 +58,7 @@ decoder =
     Json.Decode.succeed TeamSummaryInfo
         |> required "name" Json.Decode.string
         |> required "shortname" Json.Decode.string
-        |> required "id" Json.Decode.string
+        |> required "id" TeamId.decoder
         |> required "rotation_length" RotationLength.decoder
         |> required "proper_random" Json.Decode.bool
         |> required "owner_id" UserId.decoder
