@@ -5,6 +5,7 @@ import Api
 import Auth
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
+import Dict
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
@@ -217,7 +218,11 @@ successUpdate apiKey accessToken msg model =
                                 | team = Team.updateTeamSummary model.team teamSummary
                                 , formState = NoForm
                               }
-                            , Effect.none
+                            , Effect.replaceRoute
+                                { path = Route.Path.Team__Settings { team = TeamSummary.shortname teamSummary }
+                                , query = Dict.empty
+                                , hash = Nothing
+                                }
                             )
 
                         Err error ->
