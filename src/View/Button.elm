@@ -1,9 +1,12 @@
-module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withCss, withSize, withVariant)
+module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withCss, withLoading, withSize, withVariant)
 
 import Css
+import Css.Animations
 import Html.Styled as Html exposing (Html, text)
 import Html.Styled.Attributes as Attributes
 import Html.Styled.Events exposing (onClick)
+import Svg.Styled as Svg exposing (svg)
+import Svg.Styled.Attributes as SvgAttributes
 
 
 button : msg -> String -> Button msg
@@ -13,6 +16,7 @@ button onClick label =
         , variant = Primary
         , size = Medium
         , type_ = TypeButton onClick
+        , isLoading = False
         , css = []
         }
 
@@ -24,6 +28,7 @@ submit label =
         , variant = Primary
         , size = Medium
         , type_ = TypeSubmit
+        , isLoading = False
         , css = []
         }
 
@@ -37,6 +42,7 @@ type alias Options msg =
     , variant : Variant
     , size : Size
     , type_ : ButtonType msg
+    , isLoading : Bool
     , css : List Css.Style
     }
 
@@ -69,6 +75,11 @@ withVariant variant (Button options) =
 withSize : Size -> Button msg -> Button msg
 withSize size (Button options) =
     Button { options | size = size }
+
+
+withLoading : Bool -> Button msg -> Button msg
+withLoading isLoading (Button options) =
+    Button { options | isLoading = isLoading }
 
 
 withCss : List Css.Style -> Button msg -> Button msg
@@ -157,6 +168,7 @@ toHtml (Button options) =
 
             TypeSubmit ->
                 Attributes.classList []
+        , Attributes.disabled options.isLoading
         , Attributes.css
             [ Css.batch options.css
             , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
@@ -170,6 +182,79 @@ toHtml (Button options) =
             , padding options.size
             , Css.cursor Css.pointer
             , Css.hover [ Css.backgroundColor (hoverColor options.variant) ]
+            , Css.displayFlex
+            , Css.alignItems Css.center
+            , Css.property "gap" "4px"
             ]
         ]
-        [ text options.label ]
+        [ text options.label
+        , if options.isLoading then
+            loadingSpinner
+
+          else
+            text ""
+        ]
+
+
+{-| Hentet fra NAV sitt designsystem
+
+<https://aksel.nav.no/komponenter/core/button#buttondemo-loading>
+
+-}
+loadingSpinner : Html msg
+loadingSpinner =
+    svg
+        [ SvgAttributes.viewBox "0 0 50 50"
+        , SvgAttributes.preserveAspectRatio "xMidYMid"
+        , SvgAttributes.strokeWidth "7px"
+        , SvgAttributes.css
+            [ Css.width (Css.px 24)
+            , Css.animationName (Css.Animations.keyframes [ ( 100, [ Css.Animations.transform [ Css.rotate (Css.turn 1) ] ] ) ])
+            , Css.animationDuration (Css.sec 1.8)
+            , Css.property "animation-timing-function" "linear"
+            , Css.animationIterationCount Css.infinite
+            ]
+        ]
+        [ Svg.circle
+            [ SvgAttributes.cx "25"
+            , SvgAttributes.cy "25"
+            , SvgAttributes.r "20"
+            , SvgAttributes.fill "none"
+            , SvgAttributes.stroke "rgba(255, 255, 255, 0.3)"
+            , SvgAttributes.strokeWidth "6.8px"
+            ]
+            []
+        , Svg.circle
+            [ SvgAttributes.cx "25"
+            , SvgAttributes.cy "25"
+            , SvgAttributes.r "20"
+            , SvgAttributes.fill "none"
+            , SvgAttributes.stroke "white"
+            , SvgAttributes.strokeWidth "7px"
+            , SvgAttributes.css
+                [ Css.animationName
+                    (Css.Animations.keyframes
+                        [ ( 0
+                          , [ Css.Animations.custom "stroke-dasharray" "1px,200px"
+                            , Css.Animations.custom "stroke-dashoffset" "0"
+                            ]
+                          )
+                        , ( 50
+                          , [ Css.Animations.custom "stroke-dasharray" "100px,200px"
+                            , Css.Animations.custom "stroke-dashoffset" "-15px"
+                            ]
+                          )
+                        , ( 100
+                          , [ Css.Animations.custom "stroke-dasharray" "1px,200px"
+                            , Css.Animations.custom "stroke-dashoffset" "-120px"
+                            ]
+                          )
+                        ]
+                    )
+                , Css.animationDuration (Css.sec 1.8)
+                , Css.property "animation-timing-function" "ease-in-out"
+                , Css.animationIterationCount Css.infinite
+                ]
+            ]
+            []
+        ]
