@@ -1,4 +1,20 @@
-module View.TextInput exposing (TextInput, input, toHtml, withCss, withDisabled)
+module View.TextInput exposing
+    ( TextInput
+    , input
+    , withDisabled
+    , withCss
+    , toHtml
+    )
+
+{-|
+
+@docs TextInput
+@docs input
+@docs withDisabled
+@docs withCss
+@docs toHtml
+
+-}
 
 import Css
 import Html.Styled as Html exposing (Html)

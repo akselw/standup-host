@@ -1,4 +1,24 @@
-module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withCss, withDisabled, withLoading, withSize, withVariant)
+module View.Button exposing
+    ( Button
+    , button, submit
+    , Size(..), withSize
+    , Variant(..), withVariant
+    , withLoading, withDisabled
+    , withCss
+    , toHtml
+    )
+
+{-|
+
+@docs Button
+@docs button, submit
+@docs Size, withSize
+@docs Variant, withVariant
+@docs withLoading, withDisabled
+@docs withCss
+@docs toHtml
+
+-}
 
 import Css
 import Css.Animations
