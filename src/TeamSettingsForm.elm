@@ -4,6 +4,7 @@ module TeamSettingsForm exposing
     , encode
     , feilmeldingNavn
     , feilmeldingShortname
+    , fromValidated
     , init
     , navn
     , oppdaterNavn
@@ -161,6 +162,17 @@ validate (Form form) =
 teamId : ValidatedTeamSettingsForm -> String
 teamId (ValidatedForm form) =
     TeamId.toString form.teamId
+
+
+fromValidated : ValidatedTeamSettingsForm -> TeamSettingsForm
+fromValidated (ValidatedForm form) =
+    Form
+        { navn = form.navn
+        , shortname = form.shortname
+        , visFeilmeldingNavn = False
+        , visFeilmeldingShortname = False
+        , teamId = form.teamId
+        }
 
 
 

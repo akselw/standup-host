@@ -429,10 +429,12 @@ viewInnstillingerSection model =
                 viewInnstillinger model.team
 
             Editing form ->
-                viewForm form
+                viewForm { isLoading = False } form
 
             SavingForm validatedForm ->
-                viewSavingForm validatedForm
+                validatedForm
+                    |> TeamSettingsForm.fromValidated
+                    |> viewForm { isLoading = True }
 
             SavingFormFailure validatedForm error ->
                 viewFormFailure validatedForm error
@@ -483,8 +485,8 @@ viewIndividualSetting { label, value } =
         ]
 
 
-viewForm : TeamSettingsForm -> Html SuccessMsg
-viewForm form =
+viewForm : { isLoading : Bool } -> TeamSettingsForm -> Html SuccessMsg
+viewForm { isLoading } form =
     Html.form
         [ Attributes.css
             [ Css.displayFlex
@@ -510,6 +512,7 @@ viewForm form =
                 |> Button.withVariant Button.Secondary
                 |> Button.toHtml
             , Button.button LagreSkjemaEndringerTrykket "Lagre"
+                |> Button.withLoading isLoading
                 |> Button.toHtml
             ]
         ]
