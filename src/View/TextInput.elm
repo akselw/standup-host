@@ -1,4 +1,4 @@
-module View.TextInput exposing (TextInput, input, toHtml, withCss)
+module View.TextInput exposing (TextInput, input, toHtml, withCss, withDisabled)
 
 import Css
 import Html.Styled as Html exposing (Html)
@@ -12,6 +12,7 @@ input { msg, label } value =
         { label = label
         , msg = msg
         , value = value
+        , disabled = False
         , css = []
         }
 
@@ -24,12 +25,18 @@ type alias Options msg =
     { label : String
     , msg : String -> msg
     , value : String
+    , disabled : Bool
     , css : List Css.Style
     }
 
 
 
 --- Options ---
+
+
+withDisabled : Bool -> TextInput msg -> TextInput msg
+withDisabled disabled (TextInput options) =
+    TextInput { options | disabled = disabled }
 
 
 withCss : List Css.Style -> TextInput msg -> TextInput msg
@@ -60,6 +67,7 @@ toHtml (TextInput options) =
             [ Html.text options.label ]
         , Html.input
             [ Attributes.value options.value
+            , Attributes.disabled options.disabled
             , onInput options.msg
             , Attributes.css
                 [ Css.padding2 (Css.px 8) (Css.px 16)

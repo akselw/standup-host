@@ -501,10 +501,12 @@ viewForm { isLoading } form =
         [ form
             |> TeamSettingsForm.navn
             |> TextInput.input { label = "Navn", msg = NavnOppdatert }
+            |> TextInput.withDisabled isLoading
             |> TextInput.toHtml
         , form
             |> TeamSettingsForm.shortname
             |> TextInput.input { label = "Shortname", msg = ShortnameOppdatert }
+            |> TextInput.withDisabled isLoading
             |> TextInput.toHtml
         , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.shortname form) }
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]
