@@ -564,10 +564,10 @@ viewTeammedlem ( medlem, medlemState ) =
     viewTeammedlemListeElement
         (case medlemState of
             InitialMedlemState ->
-                [ viewTeammedlemUtenForm medlem ]
+                [ viewTeammedlemUtenForm { isLoading = False } medlem ]
 
             LagrerSletting ->
-                [ text "sletter" ]
+                [ viewTeammedlemUtenForm { isLoading = True } medlem ]
 
             RedigererNavn string ->
                 [ viewRedigerTeammedlemNavn { isLoading = False } medlem string ]
@@ -577,15 +577,17 @@ viewTeammedlem ( medlem, medlemState ) =
         )
 
 
-viewTeammedlemUtenForm : Teammedlem -> Html SuccessMsg
-viewTeammedlemUtenForm medlem =
+viewTeammedlemUtenForm : { isLoading : Bool } -> Teammedlem -> Html SuccessMsg
+viewTeammedlemUtenForm { isLoading } medlem =
     div [ Attributes.css teammedlemListeElementLayout ]
         [ span [ Attributes.css [ Css.flex (Css.num 1) ] ] [ text (Teammedlem.navn medlem) ]
         , Button.button (RedigerKnappTrykket medlem) "Rediger"
             |> Button.withVariant Button.Secondary
+            |> Button.withDisabled isLoading
             |> Button.toHtml
         , Button.button (SlettKnappTrykket medlem) "Slett"
             |> Button.withVariant Button.Secondary
+            |> Button.withLoadingSpinner isLoading
             |> Button.toHtml
         ]
 
