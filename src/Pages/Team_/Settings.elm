@@ -488,7 +488,8 @@ viewIndividualSetting { label, value } =
 viewForm : { isLoading : Bool } -> TeamSettingsForm -> Html SuccessMsg
 viewForm { isLoading } form =
     Html.form
-        [ Attributes.css
+        [ onSubmit LagreSkjemaEndringerTrykket
+        , Attributes.css
             [ Css.displayFlex
             , Css.flexDirection Css.column
             , Css.property "gap" "16px"
@@ -514,7 +515,7 @@ viewForm { isLoading } form =
                 |> Button.withVariant Button.Secondary
                 |> Button.withDisabled isLoading
                 |> Button.toHtml
-            , Button.button LagreSkjemaEndringerTrykket "Lagre"
+            , Button.submit "Lagre"
                 |> Button.withLoading isLoading
                 |> Button.toHtml
             ]
