@@ -512,6 +512,7 @@ viewForm { isLoading } form =
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]
             [ Button.button AvbrytSkjemaendringTrykket "Avbryt"
                 |> Button.withVariant Button.Secondary
+                |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.button LagreSkjemaEndringerTrykket "Lagre"
                 |> Button.withLoading isLoading

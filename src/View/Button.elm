@@ -1,4 +1,4 @@
-module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withCss, withLoading, withSize, withVariant)
+module View.Button exposing (Button, Size(..), Variant(..), button, submit, toHtml, withCss, withDisabled, withLoading, withSize, withVariant)
 
 import Css
 import Css.Animations
@@ -17,6 +17,7 @@ button onClick label =
         , size = Medium
         , type_ = TypeButton onClick
         , isLoading = False
+        , disabled = False
         , css = []
         }
 
@@ -29,6 +30,7 @@ submit label =
         , size = Medium
         , type_ = TypeSubmit
         , isLoading = False
+        , disabled = False
         , css = []
         }
 
@@ -43,6 +45,7 @@ type alias Options msg =
     , size : Size
     , type_ : ButtonType msg
     , isLoading : Bool
+    , disabled : Bool
     , css : List Css.Style
     }
 
@@ -80,6 +83,11 @@ withSize size (Button options) =
 withLoading : Bool -> Button msg -> Button msg
 withLoading isLoading (Button options) =
     Button { options | isLoading = isLoading }
+
+
+withDisabled : Bool -> Button msg -> Button msg
+withDisabled disabled (Button options) =
+    Button { options | disabled = disabled }
 
 
 withCss : List Css.Style -> Button msg -> Button msg
@@ -168,7 +176,7 @@ toHtml (Button options) =
 
             TypeSubmit ->
                 Attributes.classList []
-        , Attributes.disabled options.isLoading
+        , Attributes.disabled (options.isLoading || options.disabled)
         , Attributes.css
             [ Css.batch options.css
             , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
