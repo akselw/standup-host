@@ -74,9 +74,9 @@ type FormState
 
 type TeammedlemState
     = InitialMedlemState
+    | LagrerSletting
     | RedigererNavn String
     | LagrerNavneendring String
-    | LagrerSletting
 
 
 type LeggTilMedlemState
@@ -564,26 +564,30 @@ viewTeammedlem ( medlem, medlemState ) =
     viewTeammedlemListeElement
         (case medlemState of
             InitialMedlemState ->
-                [ div [ Attributes.css teammedlemListeElementLayout ]
-                    [ span [ Attributes.css [ Css.flex (Css.num 1) ] ] [ text (Teammedlem.navn medlem) ]
-                    , Button.button (RedigerKnappTrykket medlem) "Rediger"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.toHtml
-                    , Button.button (SlettKnappTrykket medlem) "Slett"
-                        |> Button.withVariant Button.Secondary
-                        |> Button.toHtml
-                    ]
-                ]
+                [ viewTeammedlemUtenForm medlem ]
+
+            LagrerSletting ->
+                [ text "sletter" ]
 
             RedigererNavn string ->
                 [ viewRedigerTeammedlemNavn { isLoading = False } medlem string ]
 
             LagrerNavneendring string ->
                 [ viewRedigerTeammedlemNavn { isLoading = True } medlem string ]
-
-            LagrerSletting ->
-                [ text "sletter" ]
         )
+
+
+viewTeammedlemUtenForm : Teammedlem -> Html SuccessMsg
+viewTeammedlemUtenForm medlem =
+    div [ Attributes.css teammedlemListeElementLayout ]
+        [ span [ Attributes.css [ Css.flex (Css.num 1) ] ] [ text (Teammedlem.navn medlem) ]
+        , Button.button (RedigerKnappTrykket medlem) "Rediger"
+            |> Button.withVariant Button.Secondary
+            |> Button.toHtml
+        , Button.button (SlettKnappTrykket medlem) "Slett"
+            |> Button.withVariant Button.Secondary
+            |> Button.toHtml
+        ]
 
 
 viewRedigerTeammedlemNavn : { isLoading : Bool } -> Teammedlem -> String -> Html SuccessMsg
