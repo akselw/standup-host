@@ -640,27 +640,30 @@ viewLeggTilMedlemInput leggTilMedlemState =
 
         RedigererLeggTilMedlem string ->
             viewTeammedlemListeElement
-                [ viewLeggTilTeammedlem string ]
+                [ viewLeggTilTeammedlem { isLoading = False } string ]
 
         LagrerLeggTilMedlem string ->
             viewTeammedlemListeElement
-                [ text "lagrer" ]
+                [ viewLeggTilTeammedlem { isLoading = True } string ]
 
 
-viewLeggTilTeammedlem : String -> Html SuccessMsg
-viewLeggTilTeammedlem string =
+viewLeggTilTeammedlem : { isLoading : Bool } -> String -> Html SuccessMsg
+viewLeggTilTeammedlem { isLoading } string =
     form
         [ onSubmit LagreLeggTilMedlemKnappTrykket
         , Attributes.css teammedlemListeElementLayout
         ]
         [ TextInput.input { msg = LeggTilMedlemNavnOppdatert, label = "Navn" } string
+            |> TextInput.withDisabled isLoading
             |> TextInput.withCss [ Css.flex (Css.num 1) ]
             |> TextInput.toHtml
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.justifyContent Css.spaceBetween, Css.property "gap" "12px" ] ]
             [ Button.button AvbrytLeggTilMedlemKnappTrykket "Avbryt"
                 |> Button.withVariant Button.Secondary
+                |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.submit "Legg til"
+                |> Button.withLoading isLoading
                 |> Button.toHtml
             ]
         ]
