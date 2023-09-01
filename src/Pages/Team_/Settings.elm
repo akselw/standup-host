@@ -576,30 +576,33 @@ viewTeammedlem ( medlem, medlemState ) =
                 ]
 
             RedigererNavn string ->
-                [ viewRedigerTeammedlemNavn medlem string ]
+                [ viewRedigerTeammedlemNavn { isLoading = False } medlem string ]
 
             LagrerNavneendring string ->
-                [ text "lagrer" ]
+                [ viewRedigerTeammedlemNavn { isLoading = True } medlem string ]
 
             LagrerSletting ->
                 [ text "sletter" ]
         )
 
 
-viewRedigerTeammedlemNavn : Teammedlem -> String -> Html SuccessMsg
-viewRedigerTeammedlemNavn medlem string =
+viewRedigerTeammedlemNavn : { isLoading : Bool } -> Teammedlem -> String -> Html SuccessMsg
+viewRedigerTeammedlemNavn { isLoading } medlem string =
     form
         [ onSubmit (LagreRedigeringKnappTrykket medlem)
         , Attributes.css teammedlemListeElementLayout
         ]
         [ TextInput.input { msg = MedlemNavnOppdatert medlem, label = "Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"" } string
+            |> TextInput.withDisabled isLoading
             |> TextInput.withCss [ Css.flex (Css.num 1) ]
             |> TextInput.toHtml
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.justifyContent Css.spaceBetween, Css.property "gap" "12px" ] ]
             [ Button.button (AvbrytRedigeringKnappTrykket medlem) "Avbryt"
                 |> Button.withVariant Button.Secondary
+                |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.submit "Lagre"
+                |> Button.withLoading isLoading
                 |> Button.toHtml
             ]
         ]
