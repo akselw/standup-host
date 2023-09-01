@@ -3,7 +3,7 @@ module View.Button exposing
     , button, submit
     , Size(..), withSize
     , Variant(..), withVariant
-    , withLoading, withDisabled
+    , withLoadingSpinner, withDisabled
     , withCss
     , toHtml
     )
@@ -14,7 +14,7 @@ module View.Button exposing
 @docs button, submit
 @docs Size, withSize
 @docs Variant, withVariant
-@docs withLoading, withDisabled
+@docs withLoadingSpinner, withDisabled
 @docs withCss
 @docs toHtml
 
@@ -100,8 +100,8 @@ withSize size (Button options) =
     Button { options | size = size }
 
 
-withLoading : Bool -> Button msg -> Button msg
-withLoading isLoading (Button options) =
+withLoadingSpinner : Bool -> Button msg -> Button msg
+withLoadingSpinner isLoading (Button options) =
     Button { options | isLoading = isLoading }
 
 

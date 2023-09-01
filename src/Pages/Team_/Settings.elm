@@ -516,7 +516,7 @@ viewForm { isLoading } form =
                 |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.submit "Lagre"
-                |> Button.withLoading isLoading
+                |> Button.withLoadingSpinner isLoading
                 |> Button.toHtml
             ]
         ]
@@ -602,7 +602,7 @@ viewRedigerTeammedlemNavn { isLoading } medlem string =
                 |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.submit "Lagre"
-                |> Button.withLoading isLoading
+                |> Button.withLoadingSpinner isLoading
                 |> Button.toHtml
             ]
         ]
@@ -663,7 +663,7 @@ viewLeggTilTeammedlem { isLoading } string =
                 |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.submit "Legg til"
-                |> Button.withLoading isLoading
+                |> Button.withLoadingSpinner isLoading
                 |> Button.toHtml
             ]
         ]
