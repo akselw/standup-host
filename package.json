@@ -6,6 +6,8 @@
   "scripts": {
     "start": "elm-land server",
     "build": "elm-land build",
+    "validate-format":  "elm-format --validate src",
+    "validate-prettier":  "prettier --check src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -14,6 +16,7 @@
     "@supabase/supabase-js": "^2.31.0"
   },
   "devDependencies": {
+    "elm-format": "^0.8.7",
     "elm-land": "^0.19.2",
     "prettier": "^3.0.1"
   }
