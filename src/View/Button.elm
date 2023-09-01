@@ -236,7 +236,7 @@ loadingSpinner =
         , SvgAttributes.preserveAspectRatio "xMidYMid"
         , SvgAttributes.strokeWidth "7px"
         , SvgAttributes.css
-            [ Css.width (Css.px 24)
+            [ Css.width (Css.px 19)
             , Css.animationName (Css.Animations.keyframes [ ( 100, [ Css.Animations.transform [ Css.rotate (Css.turn 1) ] ] ) ])
             , Css.animationDuration (Css.sec 1.8)
             , Css.property "animation-timing-function" "linear"
