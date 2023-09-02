@@ -3,6 +3,7 @@ module Pages.Team_.Settings exposing (Model, Msg, page)
 import AccessToken exposing (AccessToken)
 import Api
 import Auth
+import Browser.Dom
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Dict
@@ -19,6 +20,7 @@ import Route.Path
 import RouteExtras
 import Shared
 import Shared.Model
+import Task
 import Team exposing (Team)
 import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
 import TeamSummary exposing (TeamSummary)
@@ -120,6 +122,7 @@ type SuccessMsg
     | AvbrytLeggTilMedlemKnappTrykket
     | LagreLeggTilMedlemKnappTrykket
     | LeggTilMedlemResponse (Result Http.Error Teammedlem)
+    | FocusedOnElement (Result Browser.Dom.Error ())
 
 
 update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
@@ -172,7 +175,7 @@ successUpdate apiKey accessToken msg model =
     case msg of
         EndreInnstilingerKnappTrykket ->
             ( { model | formState = Editing (TeamSettingsForm.init model.team) }
-            , Effect.none
+            , focusOnInput TeamnavnInput
             )
 
         NavnOppdatert string ->
@@ -239,7 +242,7 @@ successUpdate apiKey accessToken msg model =
                         |> updateMedlemState teammedlem initRedigering
                 , leggTilMedlemState = InitialLeggTilMedlemState
               }
-            , Effect.none
+            , focusOnInput MedlemnavnInput
             )
 
         MedlemNavnOppdatert teammedlem string ->
@@ -294,8 +297,7 @@ successUpdate apiKey accessToken msg model =
                 | leggTilMedlemState = RedigererLeggTilMedlem ""
                 , medlemmer = lukkAlleMedlemRedigeringer model.medlemmer
               }
-            , Effect.none
-              -- TODO: Fokus på inputfelt
+            , focusOnInput LeggTilMedlemInput
             )
 
         LeggTilMedlemNavnOppdatert string ->
@@ -325,8 +327,7 @@ successUpdate apiKey accessToken msg model =
                 | medlemmer = model.medlemmer ++ [ ( teammedlem, InitialMedlemState ) ]
                 , leggTilMedlemState = RedigererLeggTilMedlem ""
               }
-            , Effect.none
-              -- TODO: Fokus på inputfelt
+            , focusOnInput LeggTilMedlemInput
             )
 
         LeggTilMedlemResponse (Err err) ->
@@ -341,6 +342,9 @@ successUpdate apiKey accessToken msg model =
               }
             , Effect.none
             )
+
+        FocusedOnElement _ ->
+            ( model, Effect.none )
 
 
 initRedigering : ( Teammedlem, TeammedlemState ) -> TeammedlemState
@@ -402,6 +406,38 @@ updateMedlem medlemmer medlemToUpdate =
                 ( medlem, state )
         )
         medlemmer
+
+
+
+--- InputId ---
+
+
+type InputId
+    = TeamnavnInput
+    | MedlemnavnInput
+    | LeggTilMedlemInput
+
+
+inputIdToString : InputId -> String
+inputIdToString inputId_ =
+    case inputId_ of
+        TeamnavnInput ->
+            "teamnavn_input"
+
+        MedlemnavnInput ->
+            "medlemnavn_input"
+
+        LeggTilMedlemInput ->
+            "legg_til_medlem_input"
+
+
+focusOnInput : InputId -> Effect SuccessMsg
+focusOnInput inputId =
+    inputId
+        |> inputIdToString
+        |> Browser.Dom.focus
+        |> Task.attempt FocusedOnElement
+        |> Effect.sendCmd
 
 
 
@@ -520,6 +556,7 @@ viewForm { isLoading } form =
         [ form
             |> TeamSettingsForm.navn
             |> TextInput.input { label = "Navn", msg = NavnOppdatert }
+            |> TextInput.withId (inputIdToString TeamnavnInput)
             |> TextInput.withDisabled isLoading
             |> TextInput.toHtml
         , form
@@ -617,6 +654,7 @@ viewRedigerTeammedlemNavn { isLoading } medlem string =
         , Attributes.css teammedlemListeElementLayout
         ]
         [ TextInput.input { msg = MedlemNavnOppdatert medlem, label = "Endre navn på \"" ++ Teammedlem.navn medlem ++ "\"" } string
+            |> TextInput.withId (inputIdToString MedlemnavnInput)
             |> TextInput.withDisabled isLoading
             |> TextInput.withCss [ Css.flex (Css.num 1) ]
             |> TextInput.toHtml
@@ -678,6 +716,7 @@ viewLeggTilTeammedlem { isLoading } string =
         , Attributes.css teammedlemListeElementLayout
         ]
         [ TextInput.input { msg = LeggTilMedlemNavnOppdatert, label = "Navn" } string
+            |> TextInput.withId (inputIdToString LeggTilMedlemInput)
             |> TextInput.withDisabled isLoading
             |> TextInput.withCss [ Css.flex (Css.num 1) ]
             |> TextInput.toHtml

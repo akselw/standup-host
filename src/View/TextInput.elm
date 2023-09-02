@@ -4,6 +4,7 @@ module View.TextInput exposing
     , withDisabled
     , withCss
     , toHtml
+    , withId
     )
 
 {-|
@@ -28,6 +29,7 @@ input { msg, label } value =
         { label = label
         , msg = msg
         , value = value
+        , id = Nothing
         , disabled = False
         , css = []
         }
@@ -41,6 +43,7 @@ type alias Options msg =
     { label : String
     , msg : String -> msg
     , value : String
+    , id : Maybe String
     , disabled : Bool
     , css : List Css.Style
     }
@@ -48,6 +51,11 @@ type alias Options msg =
 
 
 --- Options ---
+
+
+withId : String -> TextInput msg -> TextInput msg
+withId id (TextInput options) =
+    TextInput { options | id = Just id }
 
 
 withDisabled : Bool -> TextInput msg -> TextInput msg
@@ -92,6 +100,9 @@ toHtml (TextInput options) =
                 , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
                 , Css.fontSize (Css.px 14)
                 ]
+            , options.id
+                |> Maybe.map Attributes.id
+                |> Maybe.withDefault (Attributes.classList [])
             ]
             []
         ]
