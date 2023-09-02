@@ -10,7 +10,7 @@ import Dict
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
-import Html.Styled.Events exposing (onClick, onInput, onSubmit)
+import Html.Styled.Events exposing (onSubmit)
 import Http
 import Layouts
 import List.Extra
