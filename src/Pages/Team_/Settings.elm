@@ -726,6 +726,7 @@ viewLeggTilTeammedlem { isLoading } string =
                 |> Button.withDisabled isLoading
                 |> Button.toHtml
             , Button.submit "Legg til"
+                |> Button.withVariant Button.Tertiary
                 |> Button.withLoadingSpinner isLoading
                 |> Button.toHtml
             ]

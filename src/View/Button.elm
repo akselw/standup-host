@@ -217,11 +217,37 @@ toHtml (Button options) =
         ]
         [ text options.label
         , if options.isLoading then
-            loadingSpinner
+            loadingSpinner options.variant
 
           else
             text ""
         ]
+
+
+loadingSpinnerBackgroundColor : Variant -> String
+loadingSpinnerBackgroundColor variant =
+    case variant of
+        Primary ->
+            "rgba(255, 255, 255, 0.3)"
+
+        Secondary ->
+            "rgba(17, 41, 64, 0.13)"
+
+        Tertiary ->
+            "rgba(255, 255, 255, 0.3)"
+
+
+loadingSpinnerForegroundColor : Variant -> String
+loadingSpinnerForegroundColor variant =
+    case variant of
+        Primary ->
+            "white"
+
+        Secondary ->
+            "rgb(35, 38, 42)"
+
+        Tertiary ->
+            "white"
 
 
 {-| Hentet fra NAV sitt designsystem
@@ -229,8 +255,8 @@ toHtml (Button options) =
 <https://aksel.nav.no/komponenter/core/button#buttondemo-loading>
 
 -}
-loadingSpinner : Html msg
-loadingSpinner =
+loadingSpinner : Variant -> Html msg
+loadingSpinner variant =
     svg
         [ SvgAttributes.viewBox "0 0 50 50"
         , SvgAttributes.preserveAspectRatio "xMidYMid"
@@ -248,7 +274,7 @@ loadingSpinner =
             , SvgAttributes.cy "25"
             , SvgAttributes.r "20"
             , SvgAttributes.fill "none"
-            , SvgAttributes.stroke "rgba(255, 255, 255, 0.3)"
+            , SvgAttributes.stroke (loadingSpinnerBackgroundColor variant)
             , SvgAttributes.strokeWidth "6.8px"
             ]
             []
@@ -257,7 +283,7 @@ loadingSpinner =
             , SvgAttributes.cy "25"
             , SvgAttributes.r "20"
             , SvgAttributes.fill "none"
-            , SvgAttributes.stroke "white"
+            , SvgAttributes.stroke (loadingSpinnerForegroundColor variant)
             , SvgAttributes.strokeWidth "7px"
             , SvgAttributes.css
                 [ Css.animationName
