@@ -232,24 +232,29 @@ successUpdate apiKey accessToken msg model =
                     ( model, Effect.none )
 
         RedigerKnappTrykket teammedlem ->
-            ( { model | medlemmer = updateMedlemState model.medlemmer teammedlem initRedigering }
+            ( { model
+                | medlemmer =
+                    model.medlemmer
+                        |> lukkAlleMedlemRedigeringer
+                        |> updateMedlemState teammedlem initRedigering
+              }
             , Effect.none
             )
 
         MedlemNavnOppdatert teammedlem string ->
-            ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem (RedigererNavn string) }
+            ( { model | medlemmer = replaceMedlemState teammedlem (RedigererNavn string) model.medlemmer }
             , Effect.none
             )
 
         AvbrytRedigeringKnappTrykket teammedlem ->
-            ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem InitialMedlemState }
+            ( { model | medlemmer = replaceMedlemState teammedlem InitialMedlemState model.medlemmer }
             , Effect.none
             )
 
         LagreRedigeringKnappTrykket teammedlem ->
             case endretMedlemnavn model.medlemmer teammedlem of
                 Just endretNavn ->
-                    ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem (LagrerNavneendring endretNavn) }
+                    ( { model | medlemmer = replaceMedlemState teammedlem (LagrerNavneendring endretNavn) model.medlemmer }
                     , Api.updateTeammedlemNavn apiKey NavneendringResponse accessToken teammedlem endretNavn
                     )
 
@@ -269,7 +274,7 @@ successUpdate apiKey accessToken msg model =
             )
 
         SlettKnappTrykket teammedlem ->
-            ( { model | medlemmer = replaceMedlemState model.medlemmer teammedlem LagrerSletting }
+            ( { model | medlemmer = replaceMedlemState teammedlem LagrerSletting model.medlemmer }
             , Api.slettTeammedlem apiKey (SlettMedlemResponse teammedlem) accessToken teammedlem
             )
 
@@ -339,13 +344,13 @@ initRedigering ( medlem, _ ) =
     RedigererNavn (Teammedlem.navn medlem)
 
 
-replaceMedlemState : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> TeammedlemState -> List ( Teammedlem, TeammedlemState )
-replaceMedlemState medlemmer medlemToUpdate teammedlemState =
-    updateMedlemState medlemmer medlemToUpdate (always teammedlemState)
+replaceMedlemState : Teammedlem -> TeammedlemState -> List ( Teammedlem, TeammedlemState ) -> List ( Teammedlem, TeammedlemState )
+replaceMedlemState medlemToUpdate teammedlemState medlemmer =
+    updateMedlemState medlemToUpdate (always teammedlemState) medlemmer
 
 
-updateMedlemState : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> (( Teammedlem, TeammedlemState ) -> TeammedlemState) -> List ( Teammedlem, TeammedlemState )
-updateMedlemState medlemmer medlemToUpdate updateFunction =
+updateMedlemState : Teammedlem -> (( Teammedlem, TeammedlemState ) -> TeammedlemState) -> List ( Teammedlem, TeammedlemState ) -> List ( Teammedlem, TeammedlemState )
+updateMedlemState medlemToUpdate updateFunction medlemmer =
     List.map
         (\( medlem, state ) ->
             if Teammedlem.id medlem == Teammedlem.id medlemToUpdate then
@@ -355,6 +360,15 @@ updateMedlemState medlemmer medlemToUpdate updateFunction =
                 ( medlem, state )
         )
         medlemmer
+
+
+lukkAlleMedlemRedigeringer : List ( Teammedlem, TeammedlemState ) -> List ( Teammedlem, TeammedlemState )
+lukkAlleMedlemRedigeringer medlemmer =
+    medlemmer
+        |> List.map
+            (\( medlem, _ ) ->
+                ( medlem, InitialMedlemState )
+            )
 
 
 endretMedlemnavn : List ( Teammedlem, TeammedlemState ) -> Teammedlem -> Maybe String
