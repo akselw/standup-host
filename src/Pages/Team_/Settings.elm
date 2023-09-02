@@ -237,6 +237,7 @@ successUpdate apiKey accessToken msg model =
                     model.medlemmer
                         |> lukkAlleMedlemRedigeringer
                         |> updateMedlemState teammedlem initRedigering
+                , leggTilMedlemState = InitialLeggTilMedlemState
               }
             , Effect.none
             )
