@@ -289,7 +289,10 @@ successUpdate apiKey accessToken msg model =
             )
 
         StartÅLeggeTilMedlemTrykket ->
-            ( { model | leggTilMedlemState = RedigererLeggTilMedlem "" }
+            ( { model
+                | leggTilMedlemState = RedigererLeggTilMedlem ""
+                , medlemmer = lukkAlleMedlemRedigeringer model.medlemmer
+              }
             , Effect.none
               -- TODO: Fokus på inputfelt
             )
