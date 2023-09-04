@@ -1,4 +1,4 @@
-module Api exposing (getTeam, getTeamsForUser, leggTilTeammedlem, slettTeammedlem, updateTeam, updateTeammedlemNavn)
+module Api exposing (checkShortnameUniqueness, getTeam, getTeamsForUser, leggTilTeammedlem, slettTeammedlem, updateTeam, updateTeammedlemNavn)
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -6,6 +6,7 @@ import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
 import Json.Encode
+import ShortnameUniquenessCheck exposing (ShortnameUniquenessCheck)
 import Task exposing (Task)
 import Team exposing (Team)
 import TeamId
@@ -87,6 +88,19 @@ getTeamsForUser apiKey msg accessToken =
             , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
             ]
         , expect = Http.expectJson msg (Json.Decode.list TeamSummary.decoder)
+        }
+
+
+checkShortnameUniqueness : DatabaseApiToken -> (Result Http.Error ShortnameUniquenessCheck -> msg) -> String -> Effect msg
+checkShortnameUniqueness apiKey msg shortname =
+    getFromDatabase
+        { apiKey = apiKey
+        , table = "team"
+        , query =
+            [ Url.string "shortname" ("eq." ++ shortname)
+            , Url.string "select" "shortname"
+            ]
+        , expect = Http.expectJson msg ShortnameUniquenessCheck.decoder
         }
 
 

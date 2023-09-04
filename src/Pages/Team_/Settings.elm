@@ -6,7 +6,7 @@ import Auth
 import Browser.Dom
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
-import Dict
+import Dict exposing (Dict)
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
@@ -20,6 +20,7 @@ import Route.Path
 import RouteExtras
 import Shared
 import Shared.Model
+import ShortnameUniquenessCheck exposing (ShortnameUniquenessCheck)
 import Task
 import Team exposing (Team)
 import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
@@ -69,7 +70,7 @@ type alias TeamOwnerModel =
 
 type FormState
     = NoForm
-    | Editing TeamSettingsForm
+    | Editing (Dict String (Result Http.Error ShortnameUniquenessCheck)) TeamSettingsForm
     | SavingForm ValidatedTeamSettingsForm
     | SavingFormFailure ValidatedTeamSettingsForm Http.Error
 
@@ -107,6 +108,7 @@ type SuccessMsg
     = EndreInnstilingerKnappTrykket
     | NavnOppdatert String
     | ShortnameOppdatert String
+    | ShortnameUniquenessResponse String (Result Http.Error ShortnameUniquenessCheck)
     | LagreSkjemaEndringerTrykket
     | AvbrytSkjemaendringTrykket
     | UpdateTeamSummaryResponse (Result Http.Error TeamSummary)
@@ -174,29 +176,56 @@ successUpdate : DatabaseApiToken -> AccessToken -> SuccessMsg -> TeamOwnerModel 
 successUpdate apiKey accessToken msg model =
     case msg of
         EndreInnstilingerKnappTrykket ->
-            ( { model | formState = Editing (TeamSettingsForm.init model.team) }
+            ( { model
+                | formState =
+                    model.team
+                        |> TeamSettingsForm.init
+                        |> Editing Dict.empty
+              }
             , focusOnInput TeamnavnInput
             )
 
         NavnOppdatert string ->
             case model.formState of
-                Editing form ->
-                    ( { model | formState = Editing (TeamSettingsForm.oppdaterNavn string form) }, Effect.none )
+                Editing shortnameUniquenessDict form ->
+                    ( { model
+                        | formState =
+                            form
+                                |> TeamSettingsForm.oppdaterNavn string
+                                |> Editing shortnameUniquenessDict
+                      }
+                    , Effect.none
+                    )
 
                 _ ->
                     ( model, Effect.none )
 
         ShortnameOppdatert string ->
             case model.formState of
-                Editing form ->
-                    ( { model | formState = Editing (TeamSettingsForm.oppdaterShortname string form) }, Effect.none )
+                Editing shortnameUniquenessDict form ->
+                    ( { model
+                        | formState =
+                            form
+                                |> TeamSettingsForm.oppdaterShortname string
+                                |> Editing shortnameUniquenessDict
+                      }
+                    , Api.checkShortnameUniqueness apiKey (ShortnameUniquenessResponse string) string
+                    )
+
+                _ ->
+                    ( model, Effect.none )
+
+        ShortnameUniquenessResponse shortname result ->
+            case model.formState of
+                Editing shortnameUniquenessDict form ->
+                    ( { model | formState = Editing (Dict.insert shortname result shortnameUniquenessDict) form }, Effect.none )
 
                 _ ->
                     ( model, Effect.none )
 
         LagreSkjemaEndringerTrykket ->
             case model.formState of
-                Editing form ->
+                Editing shortnameUniquenessDict form ->
                     case TeamSettingsForm.validate form of
                         Just validated ->
                             ( { model | formState = SavingForm validated }
@@ -204,7 +233,14 @@ successUpdate apiKey accessToken msg model =
                             )
 
                         Nothing ->
-                            ( { model | formState = Editing (TeamSettingsForm.visAlleFeilmeldinger form) }, Effect.none )
+                            ( { model
+                                | formState =
+                                    form
+                                        |> TeamSettingsForm.visAlleFeilmeldinger
+                                        |> Editing shortnameUniquenessDict
+                              }
+                            , Effect.none
+                            )
 
                 _ ->
                     ( model, Effect.none )
@@ -482,7 +518,7 @@ viewInnstillingerSection model =
             NoForm ->
                 viewInnstillinger model.team
 
-            Editing form ->
+            Editing _ form ->
                 viewForm { isLoading = False } form
 
             SavingForm validatedForm ->
