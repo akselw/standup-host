@@ -6,7 +6,7 @@ import Auth
 import Browser.Dom
 import Css
 import DatabaseApiToken exposing (DatabaseApiToken)
-import Dict exposing (Dict)
+import Dict
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes exposing (value)
@@ -20,7 +20,7 @@ import Route.Path
 import RouteExtras
 import Shared
 import Shared.Model
-import ShortnameUniquenessCheck exposing (ShortnameUniquenessCheck)
+import ShortnameUniqueness exposing (ShortnameUniqueness, ShortnameUniquenessCheck)
 import Task
 import Team exposing (Team)
 import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
@@ -70,7 +70,7 @@ type alias TeamOwnerModel =
 
 type FormState
     = NoForm
-    | Editing (Dict String (Result Http.Error ShortnameUniquenessCheck)) TeamSettingsForm
+    | Editing ShortnameUniqueness TeamSettingsForm
     | SavingForm ValidatedTeamSettingsForm
     | SavingFormFailure ValidatedTeamSettingsForm Http.Error
 
@@ -180,19 +180,19 @@ successUpdate apiKey accessToken msg model =
                 | formState =
                     model.team
                         |> TeamSettingsForm.init
-                        |> Editing Dict.empty
+                        |> Editing ShortnameUniqueness.init
               }
             , focusOnInput TeamnavnInput
             )
 
         NavnOppdatert string ->
             case model.formState of
-                Editing shortnameUniquenessDict form ->
+                Editing shortnameUniqueness form ->
                     ( { model
                         | formState =
                             form
                                 |> TeamSettingsForm.oppdaterNavn string
-                                |> Editing shortnameUniquenessDict
+                                |> Editing shortnameUniqueness
                       }
                     , Effect.none
                     )
@@ -202,12 +202,12 @@ successUpdate apiKey accessToken msg model =
 
         ShortnameOppdatert string ->
             case model.formState of
-                Editing shortnameUniquenessDict form ->
+                Editing shortnameUniqueness form ->
                     ( { model
                         | formState =
                             form
                                 |> TeamSettingsForm.oppdaterShortname string
-                                |> Editing shortnameUniquenessDict
+                                |> Editing shortnameUniqueness
                       }
                     , Api.checkShortnameUniqueness apiKey (ShortnameUniquenessResponse string) string
                     )
@@ -217,15 +217,15 @@ successUpdate apiKey accessToken msg model =
 
         ShortnameUniquenessResponse shortname result ->
             case model.formState of
-                Editing shortnameUniquenessDict form ->
-                    ( { model | formState = Editing (Dict.insert shortname result shortnameUniquenessDict) form }, Effect.none )
+                Editing shortnameUniqueness form ->
+                    ( { model | formState = Editing (ShortnameUniqueness.insert shortname result shortnameUniqueness) form }, Effect.none )
 
                 _ ->
                     ( model, Effect.none )
 
         LagreSkjemaEndringerTrykket ->
             case model.formState of
-                Editing shortnameUniquenessDict form ->
+                Editing shortnameUniqueness form ->
                     case TeamSettingsForm.validate form of
                         Just validated ->
                             ( { model | formState = SavingForm validated }
@@ -237,7 +237,7 @@ successUpdate apiKey accessToken msg model =
                                 | formState =
                                     form
                                         |> TeamSettingsForm.visAlleFeilmeldinger
-                                        |> Editing shortnameUniquenessDict
+                                        |> Editing shortnameUniqueness
                               }
                             , Effect.none
                             )

@@ -6,7 +6,7 @@ import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
 import Json.Encode
-import ShortnameUniquenessCheck exposing (ShortnameUniquenessCheck)
+import ShortnameUniqueness exposing (ShortnameUniquenessCheck)
 import Task exposing (Task)
 import Team exposing (Team)
 import TeamId
@@ -100,7 +100,7 @@ checkShortnameUniqueness apiKey msg shortname =
             [ Url.string "shortname" ("eq." ++ shortname)
             , Url.string "select" "shortname"
             ]
-        , expect = Http.expectJson msg ShortnameUniquenessCheck.decoder
+        , expect = Http.expectJson msg ShortnameUniqueness.decoder
         }
 
 
