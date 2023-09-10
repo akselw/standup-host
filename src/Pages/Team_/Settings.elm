@@ -609,12 +609,14 @@ viewForm { isLoading, shortnameIcon } form =
             |> TextInput.input { label = "Navn", msg = NavnOppdatert }
             |> TextInput.withId (inputIdToString TeamnavnInput)
             |> TextInput.withDisabled isLoading
+            |> TextInput.withErrorMessage (TeamSettingsForm.feilmeldingNavn form)
             |> TextInput.toHtml
         , form
             |> TeamSettingsForm.shortname
             |> TextInput.input { label = "Shortname", msg = ShortnameOppdatert }
             |> TextInput.withStatusIcon shortnameIcon
             |> TextInput.withDisabled isLoading
+            |> TextInput.withErrorMessage (TeamSettingsForm.feilmeldingShortname form)
             |> TextInput.toHtml
         , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.shortname form) }
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]

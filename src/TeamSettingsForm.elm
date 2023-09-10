@@ -18,6 +18,7 @@ module TeamSettingsForm exposing
     )
 
 import Json.Encode
+import ShortnameUniqueness exposing (ShortnameUniqueness)
 import Team exposing (Team)
 import TeamId exposing (TeamId)
 
@@ -132,7 +133,6 @@ visAlleFeilmeldinger form =
 
 
 
---- TODO: Lag en ShortnameUniquenessCheck type, som decodes fra en list med {shortname=...}, der tom liste gir unique
 --- Validering ---
 
 

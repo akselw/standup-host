@@ -4,6 +4,7 @@ module View.TextInput exposing
     , withId
     , withDisabled
     , StatusIcon(..), withStatusIcon
+    , withErrorMessage
     , withCss
     , toHtml
     )
@@ -15,15 +16,19 @@ module View.TextInput exposing
 @docs withId
 @docs withDisabled
 @docs StatusIcon, withStatusIcon
+@docs withErrorMessage
 @docs withCss
 @docs toHtml
 
 -}
 
+import Accessibility.Styled.Aria as Aria
+import Accessibility.Styled.Live as AriaLive
 import Css
-import Html.Styled as Html exposing (Html)
+import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attributes
 import Html.Styled.Events exposing (onInput)
+import Json.Encode
 
 
 input : { msg : String -> msg, label : String } -> String -> TextInput msg
@@ -32,9 +37,10 @@ input { msg, label } value =
         { label = label
         , msg = msg
         , value = value
-        , id = Nothing
+        , id = label
         , disabled = False
         , statusIcon = Nothing
+        , errorMessage = Nothing
         , css = []
         }
 
@@ -47,9 +53,10 @@ type alias Options msg =
     { label : String
     , msg : String -> msg
     , value : String
-    , id : Maybe String
+    , id : String
     , disabled : Bool
     , statusIcon : Maybe StatusIcon
+    , errorMessage : Maybe String
     , css : List Css.Style
     }
 
@@ -66,7 +73,7 @@ type StatusIcon
 
 withId : String -> TextInput msg -> TextInput msg
 withId id (TextInput options) =
-    TextInput { options | id = Just id }
+    TextInput { options | id = id }
 
 
 withDisabled : Bool -> TextInput msg -> TextInput msg
@@ -77,6 +84,11 @@ withDisabled disabled (TextInput options) =
 withStatusIcon : Maybe StatusIcon -> TextInput msg -> TextInput msg
 withStatusIcon statusIcon (TextInput options) =
     TextInput { options | statusIcon = statusIcon }
+
+
+withErrorMessage : Maybe String -> TextInput msg -> TextInput msg
+withErrorMessage errorMessage (TextInput options) =
+    TextInput { options | errorMessage = errorMessage }
 
 
 withCss : List Css.Style -> TextInput msg -> TextInput msg
@@ -107,7 +119,10 @@ toHtml (TextInput options) =
             [ Html.text options.label ]
         , Html.input
             [ Attributes.value options.value
+            , Attributes.id options.id
             , Attributes.disabled options.disabled
+            , describedBy options
+            , invalid options.errorMessage
             , onInput options.msg
             , Attributes.css
                 [ Css.padding2 (Css.px 8) (Css.px 16)
@@ -117,12 +132,50 @@ toHtml (TextInput options) =
                 , Css.fontSize (Css.px 14)
                 , backgroundImage options.statusIcon
                 ]
-            , options.id
-                |> Maybe.map Attributes.id
-                |> Maybe.withDefault (Attributes.classList [])
             ]
             []
+        , options.errorMessage
+            |> Maybe.map (viewErrorMessage options.id)
+            |> Maybe.withDefault (Html.text "")
         ]
+
+
+describedBy : Options msg -> Attribute msg
+describedBy options =
+    case options.errorMessage of
+        Just _ ->
+            options.id
+                |> errorId
+                |> List.singleton
+                |> Aria.describedBy
+
+        Nothing ->
+            Attributes.css []
+
+
+invalid : Maybe String -> Attribute msg
+invalid errorMessage =
+    case errorMessage of
+        Just _ ->
+            Aria.invalid True
+
+        Nothing ->
+            Attributes.css []
+
+
+viewErrorMessage : String -> String -> Html msg
+viewErrorMessage inputId errorMessage =
+    Html.div
+        [ Attributes.id (errorId inputId)
+        , AriaLive.polite
+        ]
+        [ Html.text errorMessage
+        ]
+
+
+errorId : String -> String
+errorId inputId =
+    inputId ++ "--error"
 
 
 backgroundImage : Maybe StatusIcon -> Css.Style
