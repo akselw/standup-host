@@ -1,4 +1,12 @@
-module ShortnameUniqueness exposing (ShortnameUniqueness, ShortnameUniquenessCheck, decoder, init, insert, isLoading, isUnique)
+module ShortnameUniqueness exposing
+    ( ShortnameUniqueness
+    , ShortnameUniquenessCheck
+    , decoder
+    , init
+    , insert
+    , isLoading
+    , isUnique
+    )
 
 import Dict exposing (Dict)
 import Http
@@ -26,8 +34,8 @@ insert shortname result (ShortnameUniqueness dict) =
         |> ShortnameUniqueness
 
 
-isUnique : String -> ShortnameUniqueness -> Bool
-isUnique shortname (ShortnameUniqueness dict) =
+isUnique : ShortnameUniqueness -> String -> Bool
+isUnique (ShortnameUniqueness dict) shortname =
     case Dict.get shortname dict of
         Just (Ok Unique) ->
             True
@@ -36,8 +44,8 @@ isUnique shortname (ShortnameUniqueness dict) =
             False
 
 
-isLoading : String -> ShortnameUniqueness -> Bool
-isLoading shortname (ShortnameUniqueness dict) =
+isLoading : ShortnameUniqueness -> String -> Bool
+isLoading (ShortnameUniqueness dict) shortname =
     case Dict.get shortname dict of
         Nothing ->
             True

@@ -1,0 +1,4 @@
+<svg viewBox="0 0 50 50" preserveAspectRatio="xMidYMid" stroke-width="7px" class="text-input-loading-spinner">
+    <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(17, 41, 64, 0.13)" stroke-width="6.8px"/>
+    <circle cx="25" cy="25" r="20" fill="none" stroke="#23262a" stroke-width="7px" class="text-input-loading-spinner__cicle"/>
+</svg>

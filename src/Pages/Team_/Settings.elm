@@ -518,17 +518,32 @@ viewInnstillingerSection model =
             NoForm ->
                 viewInnstillinger model.team
 
-            Editing _ form ->
-                viewForm { isLoading = False } form
+            Editing shortnameUniqueness form ->
+                viewForm { isLoading = False, shortnameIcon = shortnameStatusIcon model.team form shortnameUniqueness } form
 
             SavingForm validatedForm ->
                 validatedForm
                     |> TeamSettingsForm.fromValidated
-                    |> viewForm { isLoading = True }
+                    |> viewForm { isLoading = True, shortnameIcon = Nothing }
 
             SavingFormFailure validatedForm error ->
                 viewFormFailure validatedForm error
         ]
+
+
+shortnameStatusIcon : Team -> TeamSettingsForm -> ShortnameUniqueness -> Maybe TextInput.StatusIcon
+shortnameStatusIcon team form shortnameUniqueness =
+    if Team.shortname team == TeamSettingsForm.shortname form then
+        Just TextInput.Checkmark
+
+    else if ShortnameUniqueness.isLoading shortnameUniqueness (TeamSettingsForm.shortname form) then
+        Just TextInput.LoadingSpinner
+
+    else if ShortnameUniqueness.isUnique shortnameUniqueness (TeamSettingsForm.shortname form) then
+        Just TextInput.Checkmark
+
+    else
+        Just TextInput.Error
 
 
 viewInnstillinger : Team -> Html SuccessMsg
@@ -575,8 +590,8 @@ viewIndividualSetting { label, value } =
         ]
 
 
-viewForm : { isLoading : Bool } -> TeamSettingsForm -> Html SuccessMsg
-viewForm { isLoading } form =
+viewForm : { isLoading : Bool, shortnameIcon : Maybe TextInput.StatusIcon } -> TeamSettingsForm -> Html SuccessMsg
+viewForm { isLoading, shortnameIcon } form =
     Html.form
         [ onSubmit LagreSkjemaEndringerTrykket
         , Attributes.css
@@ -598,6 +613,7 @@ viewForm { isLoading } form =
         , form
             |> TeamSettingsForm.shortname
             |> TextInput.input { label = "Shortname", msg = ShortnameOppdatert }
+            |> TextInput.withStatusIcon shortnameIcon
             |> TextInput.withDisabled isLoading
             |> TextInput.toHtml
         , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.shortname form) }
