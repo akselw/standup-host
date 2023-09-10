@@ -107,7 +107,9 @@ type Msg
 type SuccessMsg
     = EndreInnstilingerKnappTrykket
     | NavnOppdatert String
+    | NavnMistetFokus
     | ShortnameOppdatert String
+    | ShortnameMistetFokus
     | ShortnameUniquenessResponse String (Result Http.Error ShortnameUniquenessCheck)
     | LagreSkjemaEndringerTrykket
     | AvbrytSkjemaendringTrykket
@@ -200,6 +202,21 @@ successUpdate apiKey accessToken msg model =
                 _ ->
                     ( model, Effect.none )
 
+        NavnMistetFokus ->
+            case model.formState of
+                Editing shortnameUniqueness form ->
+                    ( { model
+                        | formState =
+                            form
+                                |> TeamSettingsForm.visFeilmeldingNavn
+                                |> Editing shortnameUniqueness
+                      }
+                    , Effect.none
+                    )
+
+                _ ->
+                    ( model, Effect.none )
+
         ShortnameOppdatert string ->
             case model.formState of
                 Editing shortnameUniqueness form ->
@@ -210,6 +227,21 @@ successUpdate apiKey accessToken msg model =
                                 |> Editing shortnameUniqueness
                       }
                     , Api.checkShortnameUniqueness apiKey (ShortnameUniquenessResponse string) string
+                    )
+
+                _ ->
+                    ( model, Effect.none )
+
+        ShortnameMistetFokus ->
+            case model.formState of
+                Editing shortnameUniqueness form ->
+                    ( { model
+                        | formState =
+                            form
+                                |> TeamSettingsForm.visFeilmeldingShortname
+                                |> Editing shortnameUniqueness
+                      }
+                    , Effect.none
                     )
 
                 _ ->
@@ -610,6 +642,7 @@ viewForm { isLoading, shortnameIcon } form =
             |> TextInput.withId (inputIdToString TeamnavnInput)
             |> TextInput.withDisabled isLoading
             |> TextInput.withErrorMessage (TeamSettingsForm.feilmeldingNavn form)
+            |> TextInput.onBlur NavnMistetFokus
             |> TextInput.toHtml
         , form
             |> TeamSettingsForm.shortname
@@ -617,6 +650,7 @@ viewForm { isLoading, shortnameIcon } form =
             |> TextInput.withStatusIcon shortnameIcon
             |> TextInput.withDisabled isLoading
             |> TextInput.withErrorMessage (TeamSettingsForm.feilmeldingShortname form)
+            |> TextInput.onBlur ShortnameMistetFokus
             |> TextInput.toHtml
         , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.shortname form) }
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]

@@ -5,6 +5,7 @@ module View.TextInput exposing
     , withDisabled
     , StatusIcon(..), withStatusIcon
     , withErrorMessage
+    , onBlur
     , withCss
     , toHtml
     )
@@ -17,6 +18,7 @@ module View.TextInput exposing
 @docs withDisabled
 @docs StatusIcon, withStatusIcon
 @docs withErrorMessage
+@docs onBlur
 @docs withCss
 @docs toHtml
 
@@ -27,7 +29,7 @@ import Accessibility.Styled.Live as AriaLive
 import Css
 import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attributes
-import Html.Styled.Events exposing (onInput)
+import Html.Styled.Events as Events exposing (onInput)
 
 
 input : { msg : String -> msg, label : String } -> String -> TextInput msg
@@ -40,6 +42,7 @@ input { msg, label } value =
         , disabled = False
         , statusIcon = Nothing
         , errorMessage = Nothing
+        , onBlur = Nothing
         , css = []
         }
 
@@ -56,6 +59,7 @@ type alias Options msg =
     , disabled : Bool
     , statusIcon : Maybe StatusIcon
     , errorMessage : Maybe String
+    , onBlur : Maybe msg
     , css : List Css.Style
     }
 
@@ -88,6 +92,11 @@ withStatusIcon statusIcon (TextInput options) =
 withErrorMessage : Maybe String -> TextInput msg -> TextInput msg
 withErrorMessage errorMessage (TextInput options) =
     TextInput { options | errorMessage = errorMessage }
+
+
+onBlur : msg -> TextInput msg -> TextInput msg
+onBlur msg (TextInput options) =
+    TextInput { options | onBlur = Just msg }
 
 
 withCss : List Css.Style -> TextInput msg -> TextInput msg
@@ -123,6 +132,9 @@ toHtml (TextInput options) =
             , describedBy options
             , invalid options.errorMessage
             , onInput options.msg
+            , options.onBlur
+                |> Maybe.map Events.onBlur
+                |> Maybe.withDefault (Attributes.classList [])
             , Attributes.css
                 [ Css.padding2 (Css.px 8) (Css.px 16)
                 , Css.borderRadius (Css.px 6)
