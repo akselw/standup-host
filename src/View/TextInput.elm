@@ -28,7 +28,6 @@ import Css
 import Html.Styled as Html exposing (Attribute, Html)
 import Html.Styled.Attributes as Attributes
 import Html.Styled.Events exposing (onInput)
-import Json.Encode
 
 
 input : { msg : String -> msg, label : String } -> String -> TextInput msg
@@ -127,9 +126,9 @@ toHtml (TextInput options) =
             , Attributes.css
                 [ Css.padding2 (Css.px 8) (Css.px 16)
                 , Css.borderRadius (Css.px 6)
-                , Css.border3 (Css.px 1) Css.solid (Css.hex "979FAF")
                 , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
                 , Css.fontSize (Css.px 14)
+                , border options.errorMessage
                 , backgroundImage options.statusIcon
                 ]
             ]
@@ -168,6 +167,11 @@ viewErrorMessage inputId errorMessage =
     Html.div
         [ Attributes.id (errorId inputId)
         , AriaLive.polite
+        , Attributes.css
+            [ Css.fontSize (Css.px 14)
+            , Css.marginTop (Css.px 4)
+            , Css.color (Css.hex "C30000")
+            ]
         ]
         [ Html.text errorMessage
         ]
@@ -176,6 +180,16 @@ viewErrorMessage inputId errorMessage =
 errorId : String -> String
 errorId inputId =
     inputId ++ "--error"
+
+
+border : Maybe String -> Css.Style
+border errorMessage =
+    case errorMessage of
+        Just _ ->
+            Css.border3 (Css.px 1) Css.solid (Css.hex "C30000")
+
+        Nothing ->
+            Css.border3 (Css.px 1) Css.solid (Css.hex "979FAF")
 
 
 backgroundImage : Maybe StatusIcon -> Css.Style
