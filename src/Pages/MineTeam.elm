@@ -15,6 +15,7 @@ import Route.Path
 import Shared
 import TeamSummary exposing (TeamSummary)
 import View exposing (View)
+import View.Button as Button
 
 
 page : Auth.User -> Shared.Model -> Route () -> Page Model Msg
@@ -58,6 +59,7 @@ init user apiKey () =
 
 type Msg
     = GetTeamsResponse (Result Http.Error (List TeamSummary))
+    | NoOp
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -72,6 +74,9 @@ update msg model =
             ( Failure error
             , Effect.none
             )
+
+        NoOp ->
+            ( model, Effect.none )
 
 
 
@@ -99,16 +104,54 @@ view model =
                 []
 
             Success teams ->
-                [ h2 [] [ text "Mine team" ]
-                , div [ Attributes.css [ Css.displayFlex, Css.flexDirection Css.column ] ]
-                    (teams
-                        |> List.map viewTeam
-                    )
+                [ div [ Attributes.css [ Css.maxWidth (Css.px 632), Css.margin Css.auto, Css.padding2 Css.zero (Css.px 16) ] ]
+                    [ h1 [] [ text "Mine team" ]
+                    , div
+                        [ Attributes.css
+                            [ Css.displayFlex
+                            , Css.flexDirection Css.column
+                            , Css.border3 (Css.px 1) Css.solid borderColor
+                            , Css.borderRadius (Css.px 6)
+                            , Css.marginBottom (Css.px 16)
+                            ]
+                        ]
+                        (teams
+                            |> List.map viewTeam
+                        )
+                    ]
                 ]
     }
 
 
-viewTeam : TeamSummary -> Html msg
+borderColor : Css.Color
+borderColor =
+    Css.hex "979FAF"
+
+
+viewTeam : TeamSummary -> Html Msg
 viewTeam team =
-    a [ Attributes.href (Route.Path.toString (Route.Path.Team_ { team = TeamSummary.shortname team })) ]
-        [ text (TeamSummary.navn team) ]
+    div
+        [ Attributes.css
+            [ Css.padding2 (Css.px 16) (Css.px 24)
+            , Css.borderTop3 (Css.px 1) Css.solid borderColor
+            , Css.firstOfType [ Css.borderWidth Css.zero ]
+            ]
+        ]
+        [ div
+            [ Attributes.css
+                [ Css.displayFlex
+                , Css.flexDirection Css.row
+                , Css.flexWrap Css.wrap
+                , Css.alignItems Css.center
+                , Css.property "gap" "12px"
+                , Css.width (Css.pct 100)
+                , Css.justifyContent Css.spaceBetween
+                ]
+            ]
+            [ a [ Attributes.href (Route.Path.toString (Route.Path.Team_ { team = TeamSummary.shortname team })) ]
+                [ text (TeamSummary.navn team) ]
+            , Button.button NoOp "Innstillinger"
+                |> Button.withVariant Button.Secondary
+                |> Button.toHtml
+            ]
+        ]
