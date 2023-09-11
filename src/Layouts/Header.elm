@@ -15,6 +15,7 @@ import Shared
 import Shared.Model
 import View exposing (View)
 import View.Button as Button
+import View.Link as Link
 import View.LinkButton as LinkButton
 
 
@@ -106,16 +107,13 @@ viewHeader maybeAccessToken =
             , Css.padding2 Css.zero (Css.px 16)
             ]
         ]
-        [ a
-            [ RouteExtras.href Route.Path.Home_
-            , Attributes.css
+        [ Link.link Route.Path.Home_ [ text "Hvem har standup?" ]
+            |> Link.withoutColor
+            |> Link.withCss
                 [ Css.fontSize (Css.px 18)
                 , Css.fontWeight (Css.int 700)
-                , Css.color (Css.hex "040F16")
-                , Css.textDecoration Css.none
                 ]
-            ]
-            [ text "Hvem har standup?" ]
+            |> Link.toHtml
         , case maybeAccessToken of
             Just accessToken ->
                 viewLoggedInButtons accessToken
@@ -138,14 +136,9 @@ viewLoggedInButtons accessToken =
                 ]
             ]
         ]
-        [ a
-            [ RouteExtras.href Route.Path.MineTeam
-            , Attributes.css
-                [ Css.color (Css.hex "040F16")
-                , Css.textDecoration Css.none
-                ]
-            ]
-            [ text "Mine team" ]
+        [ Link.link Route.Path.MineTeam [ text "Mine team" ]
+            |> Link.withoutColor
+            |> Link.toHtml
         , Button.button LoggUtKnappTrykket "Logg ut"
             |> Button.withVariant Button.Tertiary
             |> Button.withSize Button.Large

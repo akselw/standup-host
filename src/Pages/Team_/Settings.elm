@@ -28,6 +28,7 @@ import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
 import View exposing (View)
 import View.Button as Button
+import View.Link as Link
 import View.TextInput as TextInput
 
 
@@ -600,7 +601,7 @@ viewInnstillinger team =
         ]
         [ viewIndividualSetting { label = "Navn", value = text (Team.navn team) }
         , viewIndividualSetting { label = "Shortname", value = text (Team.shortname team) }
-        , viewIndividualSetting { label = "URL", value = a [ RouteExtras.href teamPath ] [ text url ] }
+        , viewIndividualSetting { label = "URL", value = Link.link teamPath [ text url ] |> Link.toHtml }
         , Button.button EndreInnstilingerKnappTrykket "Endre"
             |> Button.withVariant Button.Secondary
             |> Button.withCss [ Css.alignSelf Css.end ]
