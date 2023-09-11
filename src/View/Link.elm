@@ -66,7 +66,11 @@ toHtml (Link options) =
         [ RouteExtras.href options.path
         , Attributes.css
             [ color { withoutColor_ = options.withoutColor }
-            , Css.textDecoration Css.none
+            , if options.withoutColor then
+                Css.textDecoration Css.none
+
+              else
+                Css.textDecoration Css.underline
             , Css.batch options.css
             ]
         ]
