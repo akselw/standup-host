@@ -6,8 +6,7 @@ import Css.Global
 import Css.Media
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
-import Html.Styled.Attributes as Attributes exposing (class)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes as Attributes
 import Layout exposing (Layout)
 import Route exposing (Route)
 import Route.Path
@@ -16,6 +15,7 @@ import Shared
 import Shared.Model
 import View exposing (View)
 import View.Button as Button
+import View.LinkButton as LinkButton
 
 
 type alias Props =
@@ -156,23 +156,9 @@ viewLoggedInButtons accessToken =
 viewNonLoggedInButtons : Html msg
 viewNonLoggedInButtons =
     nav []
-        [ a
-            [ RouteExtras.href Route.Path.Login
-            , Attributes.css
-                [ Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
-                , Css.fontSize (Css.px 14)
-                , Css.letterSpacing (Css.px 1.2)
-                , Css.color (Css.hex "FFFFFF")
-                , Css.backgroundColor (Css.hex "4F46E5")
-                , Css.border Css.zero
-                , Css.borderRadius (Css.rem 0.375)
-                , Css.padding2 (Css.rem 0.625) (Css.rem 0.875)
-                , Css.cursor Css.pointer
-                , Css.hover [ Css.backgroundColor (Css.hex "6366f1") ]
-                , Css.textDecoration Css.none
-                ]
-            ]
-            [ text "Logg inn" ]
+        [ LinkButton.linkButton Route.Path.Login [ text "Logg inn" ]
+            |> LinkButton.withSize Button.Large
+            |> LinkButton.toHtml
         ]
 
 
