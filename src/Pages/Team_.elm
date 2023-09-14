@@ -211,36 +211,58 @@ view model =
     }
 
 
+viewDatoRadButton : String -> ( Msg, String ) -> Html Msg
+viewDatoRadButton gridArea ( msg, label ) =
+    span [ Attributes.css [ Css.property "grid-area" gridArea ] ]
+        [ Button.button msg label
+            |> Button.withVariant Button.Secondary
+            |> Button.toHtml
+        ]
+
+
+viewDatoRad : { leftButton : Maybe ( Msg, String ), rowText : String, rightButton : Maybe ( Msg, String ) } -> Html Msg
+viewDatoRad { leftButton, rowText, rightButton } =
+    div
+        [ Attributes.css
+            [ Css.property "display" "grid"
+            , Css.property "grid-template-columns" "1fr auto 1fr"
+            , Css.property "grid-template-areas" "\"left-button middle right-button\""
+            , Css.property "gap" "24px"
+            ]
+        ]
+        [ leftButton
+            |> Maybe.map (viewDatoRadButton "left-button")
+            |> Maybe.withDefault (text "")
+        , span
+            [ Attributes.css
+                [ Css.property "grid-area" "middle"
+                , Css.alignSelf Css.center
+                ]
+            ]
+            [ text rowText ]
+        , rightButton
+            |> Maybe.map (viewDatoRadButton "right-button")
+            |> Maybe.withDefault (text "")
+        ]
+
+
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
         Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag, morgendagensAnimationState } ->
             case valgtDag of
                 Idag ->
-                    [ div
-                        [ Attributes.css
-                            [ Css.property "display" "grid"
-                            , Css.property "grid-template-columns" "1fr auto 1fr"
-                            , Css.property "grid-template-areas" "\"left-button middle right-button\""
-                            , Css.property "gap" "24px"
-                            ]
-                        ]
-                        [ span
-                            [ Attributes.css
-                                [ Css.property "grid-area" "middle"
-                                , Css.alignSelf Css.center
-                                ]
-                            ]
-                            [ text (Dato.toUkedagString dagensDato ++ " " ++ Dato.toString dagensDato) ]
-                        , span [ Attributes.css [ Css.property "grid-area" "right-button" ] ]
-                            [ dagensDato
-                                |> Dato.nesteArbeidsdag
-                                |> Dato.toUkedagString
-                                |> Button.button (EndreFane NesteArbeidsdag)
-                                |> Button.withVariant Button.Secondary
-                                |> Button.toHtml
-                            ]
-                        ]
+                    [ viewDatoRad
+                        { leftButton = Nothing
+                        , rowText = Dato.toUkedagString dagensDato ++ " " ++ Dato.toString dagensDato
+                        , rightButton =
+                            Just
+                                ( EndreFane NesteArbeidsdag
+                                , dagensDato
+                                    |> Dato.nesteArbeidsdag
+                                    |> Dato.toUkedagString
+                                )
+                        }
                     , viewIdag dagensRekkefølge
                     ]
 
