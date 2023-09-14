@@ -20,6 +20,7 @@ import Team exposing (Team)
 import Teammedlem exposing (Teammedlem)
 import Time exposing (Month(..), Posix)
 import View exposing (View)
+import View.Button as Button
 
 
 
@@ -214,29 +215,48 @@ viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
         Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag, morgendagensAnimationState } ->
-            [ div []
-                [ button [ onClick (EndreFane Idag), type_ "button" ] [ text "I dag" ]
-                , button [ onClick (EndreFane NesteArbeidsdag), type_ "button" ]
-                    [ dagensDato
-                        |> Dato.nesteArbeidsdag
-                        |> Dato.toUkedagString
-                        |> text
-                    ]
-                ]
-            , case valgtDag of
+            case valgtDag of
                 Idag ->
-                    viewIdag dagensRekkefølge dagensDato
+                    [ div
+                        [ Attributes.css
+                            [ Css.property "display" "grid"
+                            , Css.property "grid-template-columns" "1fr auto 1fr"
+                            , Css.property "grid-template-areas" "\"left-button middle right-button\""
+                            , Css.property "gap" "24px"
+                            ]
+                        ]
+                        [ span
+                            [ Attributes.css
+                                [ Css.property "grid-area" "middle"
+                                , Css.alignSelf Css.center
+                                ]
+                            ]
+                            [ text (Dato.toUkedagString dagensDato ++ " " ++ Dato.toString dagensDato) ]
+                        , span [ Attributes.css [ Css.property "grid-area" "right-button" ] ]
+                            [ dagensDato
+                                |> Dato.nesteArbeidsdag
+                                |> Dato.toUkedagString
+                                |> Button.button (EndreFane NesteArbeidsdag)
+                                |> Button.withVariant Button.Secondary
+                                |> Button.toHtml
+                            ]
+                        ]
+                    , viewIdag dagensRekkefølge
+                    ]
 
                 NesteArbeidsdag ->
-                    viewNesteVirkedag morgendagensAnimationState morgensdagensRekkefølge dagensDato
-            ]
+                    [ div []
+                        [ button [ onClick (EndreFane Idag), type_ "button" ] [ text "I dag" ]
+                        ]
+                    , viewNesteVirkedag morgendagensAnimationState morgensdagensRekkefølge dagensDato
+                    ]
 
         _ ->
-            [ text "" ]
+            []
 
 
-viewIdag : List Teammedlem -> Dato -> Html Msg
-viewIdag rekkefølge dagensDato =
+viewIdag : List Teammedlem -> Html Msg
+viewIdag rekkefølge =
     case List.head rekkefølge of
         Just standupVert ->
             div
@@ -246,11 +266,10 @@ viewIdag rekkefølge dagensDato =
                     , Css.alignItems Css.center
                     ]
                 ]
-                [ h1 [] [ text (Teammedlem.navn standupVert) ]
-                , p [] [ text ("skal holde standup i dag, " ++ String.toLower (Dato.toUkedagString dagensDato) ++ " " ++ Dato.toString dagensDato ++ ".") ]
-                , button
-                    [ onClick VelgNyPersonIDag ]
-                    [ text (Teammedlem.navn standupVert ++ " kan ikke") ]
+                [ p [] [ text "Den som skal holde standup er" ]
+                , h1 [] [ text (Teammedlem.navn standupVert) ]
+                , Button.button VelgNyPersonIDag (Teammedlem.navn standupVert ++ " kan ikke")
+                    |> Button.toHtml
                 ]
 
         Nothing ->
