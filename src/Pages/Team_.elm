@@ -6,8 +6,7 @@ import DatabaseApiToken exposing (DatabaseApiToken)
 import Dato exposing (Dato)
 import Effect exposing (Effect)
 import Html.Styled exposing (..)
-import Html.Styled.Attributes as Attributes exposing (type_)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes as Attributes
 import Layouts
 import Page exposing (Page)
 import Process
@@ -35,9 +34,16 @@ type Model
         { dagensDato : Dato
         , dagensRekkefølge : List Teammedlem
         , morgensdagensRekkefølge : List Teammedlem
+        , viewState : ViewState
         , valgtDag : ValgtDag
         , team : Team
         }
+
+
+type ViewState
+    = IngenAnimasjon Teammedlem (List Teammedlem)
+    | BytterTeammedlem { fra : Teammedlem, til : Teammedlem } (List Teammedlem)
+    | IngenKunne
 
 
 type ValgtDag
@@ -53,6 +59,7 @@ type Msg
     = TimeReceived Posix
     | VelgNyPersonIDag
     | VelgNyPersonNesteArbeidsdag
+    | AnimasjonFerdig
     | EndreFane ValgtDag
     | HentTeamResponse (Result Team.Error Team)
 
@@ -72,19 +79,23 @@ update msg model =
                 LoadingTeam dato ->
                     case result of
                         Ok team ->
-                            ( Success
-                                { dagensDato = dato
-                                , dagensRekkefølge =
+                            let
+                                dagensRekkefølge =
                                     dato
                                         |> Dato.toSeed
                                         |> Random.step (Random.List.shuffle (Team.medlemmer team))
                                         |> Tuple.first
+                            in
+                            ( Success
+                                { dagensDato = dato
+                                , dagensRekkefølge = dagensRekkefølge
                                 , morgensdagensRekkefølge =
                                     dato
                                         |> Dato.nesteArbeidsdag
                                         |> Dato.toSeed
                                         |> Random.step (Random.List.shuffle (Team.medlemmer team))
                                         |> Tuple.first
+                                , viewState = initViewState dagensRekkefølge
                                 , valgtDag = Idag
                                 , team = team
                                 }
@@ -102,7 +113,15 @@ update msg model =
                 Success record ->
                     case record.dagensRekkefølge of
                         _ :: rest ->
-                            ( Success { record | dagensRekkefølge = rest }, Effect.none )
+                            ( Success
+                                { record
+                                    | dagensRekkefølge = rest
+                                    , viewState = nesteState record.viewState
+                                }
+                            , Process.sleep 250
+                                |> Task.perform (always AnimasjonFerdig)
+                                |> Effect.sendCmd
+                            )
 
                         [] ->
                             ( model, Effect.none )
@@ -123,6 +142,14 @@ update msg model =
                 _ ->
                     ( model, Effect.none )
 
+        AnimasjonFerdig ->
+            case model of
+                Success record ->
+                    ( Success { record | viewState = nesteState record.viewState }, Effect.none )
+
+                _ ->
+                    ( model, Effect.none )
+
         EndreFane valgtDag ->
             case model of
                 Success modelInfo ->
@@ -130,6 +157,34 @@ update msg model =
 
                 _ ->
                     ( model, Effect.none )
+
+
+initViewState : List Teammedlem -> ViewState
+initViewState teammedlemmer =
+    case teammedlemmer of
+        first :: rest ->
+            IngenAnimasjon first rest
+
+        [] ->
+            IngenKunne
+
+
+nesteState : ViewState -> ViewState
+nesteState viewState =
+    case viewState of
+        IngenAnimasjon teammedlem teammedlemmer ->
+            case teammedlemmer of
+                first :: rest ->
+                    BytterTeammedlem { fra = teammedlem, til = first } rest
+
+                [] ->
+                    IngenKunne
+
+        BytterTeammedlem { til } teammedlemmer ->
+            IngenAnimasjon til teammedlemmer
+
+        IngenKunne ->
+            IngenKunne
 
 
 
@@ -194,7 +249,7 @@ viewDatoRad { leftButton, rowText, rightButton } =
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
-        Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag } ->
+        Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag, viewState } ->
             case valgtDag of
                 Idag ->
                     [ viewDatoRad
@@ -208,7 +263,7 @@ viewContent model =
                                     |> Dato.toUkedagString
                                 )
                         }
-                    , viewIdag dagensRekkefølge
+                    , viewIdag viewState
                     ]
 
                 NesteArbeidsdag ->
@@ -228,10 +283,10 @@ viewContent model =
             []
 
 
-viewIdag : List Teammedlem -> Html Msg
-viewIdag rekkefølge =
-    case List.head rekkefølge of
-        Just standupVert ->
+viewIdag : ViewState -> Html Msg
+viewIdag viewState =
+    case viewState of
+        IngenAnimasjon standupVert _ ->
             div
                 [ Attributes.css
                     [ Css.displayFlex
@@ -245,7 +300,21 @@ viewIdag rekkefølge =
                     |> Button.toHtml
                 ]
 
-        Nothing ->
+        BytterTeammedlem { fra } _ ->
+            div
+                [ Attributes.css
+                    [ Css.displayFlex
+                    , Css.flexDirection Css.column
+                    , Css.alignItems Css.center
+                    ]
+                ]
+                [ p [] [ text "Den som skal holde standup er" ]
+                , h1 [] [ text (Teammedlem.navn fra) ]
+                , Button.button VelgNyPersonIDag (Teammedlem.navn fra ++ " kan ikke")
+                    |> Button.toHtml
+                ]
+
+        IngenKunne ->
             text "Da kunne visst ingen da..."
 
 
