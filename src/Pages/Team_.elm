@@ -264,8 +264,8 @@ viewNesteVirkedag nesteVirkedagsRekkefølge =
                     [ text "Den som skal holde standup er" ]
                 , h1 []
                     [ text (Teammedlem.navn standupVert) ]
-                , button [ onClick VelgNyPersonNesteArbeidsdag ]
-                    [ text (Teammedlem.navn standupVert ++ " kan ikke") ]
+                , Button.button VelgNyPersonNesteArbeidsdag (Teammedlem.navn standupVert ++ " kan ikke")
+                    |> Button.toHtml
                 ]
 
         Nothing ->
