@@ -27,15 +27,6 @@ import View.Button as Button
 --- MODEL ---
 
 
-type AnimationState
-    = IkkeVisNoe
-    | VisFørsteSetning
-    | VisAndreSetning
-    | VisStandupVert
-    | VisKanIkkeTekst
-    | VisAlt
-
-
 type Model
     = Init
     | LoadingTeam Dato
@@ -44,7 +35,6 @@ type Model
         { dagensDato : Dato
         , dagensRekkefølge : List Teammedlem
         , morgensdagensRekkefølge : List Teammedlem
-        , morgendagensAnimationState : AnimationState
         , valgtDag : ValgtDag
         , team : Team
         }
@@ -65,7 +55,6 @@ type Msg
     | VelgNyPersonNesteArbeidsdag
     | EndreFane ValgtDag
     | HentTeamResponse (Result Team.Error Team)
-    | AnimationTick
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
@@ -97,7 +86,6 @@ update msg model =
                                         |> Random.step (Random.List.shuffle (Team.medlemmer team))
                                         |> Tuple.first
                                 , valgtDag = Idag
-                                , morgendagensAnimationState = IkkeVisNoe
                                 , team = team
                                 }
                             , Effect.none
@@ -138,53 +126,10 @@ update msg model =
         EndreFane valgtDag ->
             case model of
                 Success modelInfo ->
-                    ( Success { modelInfo | valgtDag = valgtDag }
-                    , Process.sleep 500
-                        |> Task.perform (\_ -> AnimationTick)
-                        |> Effect.sendCmd
-                    )
+                    ( Success { modelInfo | valgtDag = valgtDag }, Effect.none )
 
                 _ ->
                     ( model, Effect.none )
-
-        AnimationTick ->
-            case model of
-                Success modelInfo ->
-                    ( Success { modelInfo | morgendagensAnimationState = nesteAnimationState modelInfo.morgendagensAnimationState }
-                    , case nesteAnimationState modelInfo.morgendagensAnimationState of
-                        VisAlt ->
-                            Effect.none
-
-                        _ ->
-                            Process.sleep 1000
-                                |> Task.perform (\_ -> AnimationTick)
-                                |> Effect.sendCmd
-                    )
-
-                _ ->
-                    ( model, Effect.none )
-
-
-nesteAnimationState : AnimationState -> AnimationState
-nesteAnimationState animationState =
-    case animationState of
-        IkkeVisNoe ->
-            VisFørsteSetning
-
-        VisFørsteSetning ->
-            VisAndreSetning
-
-        VisAndreSetning ->
-            VisStandupVert
-
-        VisStandupVert ->
-            VisKanIkkeTekst
-
-        VisKanIkkeTekst ->
-            VisAlt
-
-        VisAlt ->
-            VisAlt
 
 
 
@@ -249,7 +194,7 @@ viewDatoRad { leftButton, rowText, rightButton } =
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
-        Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag, morgendagensAnimationState } ->
+        Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag } ->
             case valgtDag of
                 Idag ->
                     [ viewDatoRad
@@ -267,10 +212,16 @@ viewContent model =
                     ]
 
                 NesteArbeidsdag ->
-                    [ div []
-                        [ button [ onClick (EndreFane Idag), type_ "button" ] [ text "I dag" ]
-                        ]
-                    , viewNesteVirkedag morgendagensAnimationState morgensdagensRekkefølge dagensDato
+                    let
+                        nesteVirkedag =
+                            Dato.nesteArbeidsdag dagensDato
+                    in
+                    [ viewDatoRad
+                        { leftButton = Just ( EndreFane Idag, "I dag" )
+                        , rowText = Dato.toUkedagString nesteVirkedag ++ " " ++ Dato.toString nesteVirkedag
+                        , rightButton = Nothing
+                        }
+                    , viewNesteVirkedag morgensdagensRekkefølge
                     ]
 
         _ ->
@@ -298,59 +249,8 @@ viewIdag rekkefølge =
             text "Da kunne visst ingen da..."
 
 
-type AnimationElememt
-    = FørsteSetning
-    | AndreSetning
-    | StandupVert
-    | KanIkkeTekst
-    | NesteKnapp
-
-
-elementSkalVises : AnimationState -> AnimationElememt -> Bool
-elementSkalVises animationState element =
-    case ( animationState, element ) of
-        ( IkkeVisNoe, _ ) ->
-            False
-
-        ( VisFørsteSetning, FørsteSetning ) ->
-            True
-
-        ( VisAndreSetning, FørsteSetning ) ->
-            True
-
-        ( VisAndreSetning, AndreSetning ) ->
-            True
-
-        ( VisStandupVert, FørsteSetning ) ->
-            True
-
-        ( VisStandupVert, AndreSetning ) ->
-            True
-
-        ( VisStandupVert, StandupVert ) ->
-            True
-
-        ( VisKanIkkeTekst, _ ) ->
-            True
-
-        ( VisAlt, _ ) ->
-            True
-
-        _ ->
-            False
-
-
-animationClasses : AnimationState -> AnimationElememt -> Css.Style
-animationClasses animationState element =
-    if elementSkalVises animationState element then
-        Css.batch []
-
-    else
-        Css.opacity Css.zero
-
-
-viewNesteVirkedag : AnimationState -> List Teammedlem -> Dato -> Html Msg
-viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
+viewNesteVirkedag : List Teammedlem -> Html Msg
+viewNesteVirkedag nesteVirkedagsRekkefølge =
     case List.head nesteVirkedagsRekkefølge of
         Just standupVert ->
             div
@@ -360,17 +260,11 @@ viewNesteVirkedag animationState nesteVirkedagsRekkefølge dagensDato =
                     , Css.alignItems Css.center
                     ]
                 ]
-                [ p [ Attributes.css [ animationClasses animationState FørsteSetning ] ]
-                    [ text ("Den som skal holde standup på " ++ String.toLower (Dato.toUkedagString (Dato.nesteArbeidsdag dagensDato)))
-                    ]
-                , p [ Attributes.css [ animationClasses animationState AndreSetning ] ]
-                    [ text "er" ]
-                , h1 [ Attributes.css [ animationClasses animationState StandupVert ] ]
+                [ p []
+                    [ text "Den som skal holde standup er" ]
+                , h1 []
                     [ text (Teammedlem.navn standupVert) ]
-                , button
-                    [ Attributes.css [ animationClasses animationState NesteKnapp ]
-                    , onClick VelgNyPersonNesteArbeidsdag
-                    ]
+                , button [ onClick VelgNyPersonNesteArbeidsdag ]
                     [ text (Teammedlem.navn standupVert ++ " kan ikke") ]
                 ]
 
