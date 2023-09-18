@@ -33,10 +33,8 @@ type Model
     | Failure Team.Error
     | Success
         { dagensDato : Dato
-        , dagensRekkefølge : List Teammedlem
-        , morgensdagensRekkefølge : List Teammedlem
-        , viewState : ViewState
         , valgtDag : ValgtDag
+        , viewState : ViewState
         , team : Team
         }
 
@@ -59,7 +57,6 @@ type ValgtDag
 type Msg
     = TimeReceived Posix
     | VelgNyPersonIDag
-    | VelgNyPersonNesteArbeidsdag
     | AnimasjonFerdig
     | EndreFane ValgtDag
     | HentTeamResponse (Result Team.Error Team)
@@ -80,24 +77,10 @@ update msg model =
                 LoadingTeam dato ->
                     case result of
                         Ok team ->
-                            let
-                                dagensRekkefølge =
-                                    dato
-                                        |> Dato.toSeed
-                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
-                                        |> Tuple.first
-                            in
                             ( Success
                                 { dagensDato = dato
-                                , dagensRekkefølge = dagensRekkefølge
-                                , morgensdagensRekkefølge =
-                                    dato
-                                        |> Dato.nesteArbeidsdag
-                                        |> Dato.toSeed
-                                        |> Random.step (Random.List.shuffle (Team.medlemmer team))
-                                        |> Tuple.first
-                                , viewState = initViewState team dato
                                 , valgtDag = Idag
+                                , viewState = initViewState team dato
                                 , team = team
                                 }
                             , Effect.none
@@ -111,34 +94,12 @@ update msg model =
 
         VelgNyPersonIDag ->
             case model of
-                Success record ->
-                    case record.dagensRekkefølge of
-                        _ :: rest ->
-                            ( Success
-                                { record
-                                    | dagensRekkefølge = rest
-                                    , viewState = nesteState record.viewState
-                                }
-                            , Process.sleep teammedlemBytteAnimasjonstid
-                                |> Task.perform (always AnimasjonFerdig)
-                                |> Effect.sendCmd
-                            )
-
-                        [] ->
-                            ( model, Effect.none )
-
-                _ ->
-                    ( model, Effect.none )
-
-        VelgNyPersonNesteArbeidsdag ->
-            case model of
-                Success record ->
-                    case record.morgensdagensRekkefølge of
-                        _ :: rest ->
-                            ( Success { record | morgensdagensRekkefølge = rest }, Effect.none )
-
-                        [] ->
-                            ( model, Effect.none )
+                Success modelInfo ->
+                    ( Success { modelInfo | viewState = nesteState modelInfo.viewState }
+                    , Process.sleep teammedlemBytteAnimasjonstid
+                        |> Task.perform (always AnimasjonFerdig)
+                        |> Effect.sendCmd
+                    )
 
                 _ ->
                     ( model, Effect.none )
@@ -271,7 +232,7 @@ viewDatoRad { leftButton, rowText, rightButton } =
 viewContent : Model -> List (Html Msg)
 viewContent model =
     case model of
-        Success { dagensDato, dagensRekkefølge, morgensdagensRekkefølge, valgtDag, viewState } ->
+        Success { dagensDato, valgtDag, viewState } ->
             case valgtDag of
                 Idag ->
                     [ viewDatoRad
@@ -348,29 +309,6 @@ viewIdag viewState =
                 ]
 
         IngenKunne ->
-            text "Da kunne visst ingen da..."
-
-
-viewNesteVirkedag : List Teammedlem -> Html Msg
-viewNesteVirkedag nesteVirkedagsRekkefølge =
-    case List.head nesteVirkedagsRekkefølge of
-        Just standupVert ->
-            div
-                [ Attributes.css
-                    [ Css.displayFlex
-                    , Css.flexDirection Css.column
-                    , Css.alignItems Css.center
-                    ]
-                ]
-                [ p []
-                    [ text "Den som skal holde standup er" ]
-                , h1 []
-                    [ text (Teammedlem.navn standupVert) ]
-                , Button.button VelgNyPersonNesteArbeidsdag (Teammedlem.navn standupVert ++ " kan ikke")
-                    |> Button.toHtml
-                ]
-
-        Nothing ->
             text "Da kunne visst ingen da..."
 
 
