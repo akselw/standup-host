@@ -111,7 +111,7 @@ update msg model =
         AnimasjonFerdig ->
             case model of
                 Success record ->
-                    ( Success { record | viewState = nesteState record.viewState }, Effect.none )
+                    ( Success { record | viewState = avsluttAnimasjon record.viewState }, Effect.none )
 
                 _ ->
                     ( model, Effect.none )
@@ -167,11 +167,24 @@ nesteState viewState =
                 [] ->
                     IngenStandupHost
 
-        StandupHost _ (BytterTeammedlem { til } teammedlemmer) ->
-            StandupHost til (IngenAnimasjon teammedlemmer)
+        StandupHost _ (BytterTeammedlem _ _) ->
+            viewState
 
         IngenStandupHost ->
             IngenStandupHost
+
+
+avsluttAnimasjon : ViewState -> ViewState
+avsluttAnimasjon viewState =
+    case viewState of
+        StandupHost _ (BytterTeammedlem { til } teammedlemmer) ->
+            StandupHost til (IngenAnimasjon teammedlemmer)
+
+        StandupHost _ (IngenAnimasjon _) ->
+            viewState
+
+        IngenStandupHost ->
+            viewState
 
 
 
