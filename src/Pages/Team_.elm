@@ -119,7 +119,7 @@ update msg model =
                                     | dagensRekkefølge = rest
                                     , viewState = nesteState record.viewState
                                 }
-                            , Process.sleep 200
+                            , Process.sleep teammedlemBytteAnimasjonstid
                                 |> Task.perform (always AnimasjonFerdig)
                                 |> Effect.sendCmd
                             )
@@ -284,6 +284,11 @@ viewContent model =
             []
 
 
+teammedlemBytteAnimasjonstid : Float
+teammedlemBytteAnimasjonstid =
+    200
+
+
 viewIdag : ViewState -> Html Msg
 viewIdag viewState =
     case viewState of
@@ -314,8 +319,8 @@ viewIdag viewState =
                 ]
                 [ p [] [ text "Den som skal holde standup er" ]
                 , div [ Attributes.css [ Css.height (Css.px 75), Css.overflow Css.hidden, Css.textAlign Css.center ] ]
-                    [ h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform 200 ] ] ] [ text (Teammedlem.navn fra) ]
-                    , h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform 200 ] ] ] [ text (Teammedlem.navn til) ]
+                    [ h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ] ] ] [ text (Teammedlem.navn fra) ]
+                    , h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ] ] ] [ text (Teammedlem.navn til) ]
                     ]
                 , Button.button VelgNyPersonIDag (Teammedlem.navn fra ++ " kan ikke")
                     |> Button.toHtml
