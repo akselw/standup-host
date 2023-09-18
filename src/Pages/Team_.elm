@@ -39,15 +39,19 @@ type Model
         }
 
 
-type ViewState
-    = IngenAnimasjon Teammedlem (List Teammedlem)
-    | BytterTeammedlem { fra : Teammedlem, til : Teammedlem } (List Teammedlem)
-    | IngenKunne
-
-
 type ValgtDag
     = Idag
     | NesteArbeidsdag
+
+
+type ViewState
+    = StandupHost Teammedlem AnimasjonState
+    | IngenStandupHost
+
+
+type AnimasjonState
+    = IngenAnimasjon (List Teammedlem)
+    | BytterTeammedlem { til : Teammedlem } (List Teammedlem)
 
 
 
@@ -56,7 +60,7 @@ type ValgtDag
 
 type Msg
     = TimeReceived Posix
-    | VelgNyPersonIDag
+    | VelgNyPerson
     | AnimasjonFerdig
     | EndreFane ValgtDag
     | HentTeamResponse (Result Team.Error Team)
@@ -92,7 +96,7 @@ update msg model =
                 _ ->
                     ( model, Effect.none )
 
-        VelgNyPersonIDag ->
+        VelgNyPerson ->
             case model of
                 Success modelInfo ->
                     ( Success { modelInfo | viewState = nesteState modelInfo.viewState }
@@ -146,28 +150,28 @@ initViewState team dato =
     in
     case rekkefølge of
         first :: rest ->
-            IngenAnimasjon first rest
+            StandupHost first (IngenAnimasjon rest)
 
         [] ->
-            IngenKunne
+            IngenStandupHost
 
 
 nesteState : ViewState -> ViewState
 nesteState viewState =
     case viewState of
-        IngenAnimasjon teammedlem teammedlemmer ->
+        StandupHost teammedlem (IngenAnimasjon teammedlemmer) ->
             case teammedlemmer of
                 first :: rest ->
-                    BytterTeammedlem { fra = teammedlem, til = first } rest
+                    StandupHost teammedlem (BytterTeammedlem { til = first } rest)
 
                 [] ->
-                    IngenKunne
+                    IngenStandupHost
 
-        BytterTeammedlem { til } teammedlemmer ->
-            IngenAnimasjon til teammedlemmer
+        StandupHost _ (BytterTeammedlem { til } teammedlemmer) ->
+            StandupHost til (IngenAnimasjon teammedlemmer)
 
-        IngenKunne ->
-            IngenKunne
+        IngenStandupHost ->
+            IngenStandupHost
 
 
 
@@ -246,7 +250,7 @@ viewContent model =
                                     |> Dato.toUkedagString
                                 )
                         }
-                    , viewIdag viewState
+                    , viewDag viewState
                     ]
 
                 NesteArbeidsdag ->
@@ -259,7 +263,7 @@ viewContent model =
                         , rowText = Dato.toUkedagString nesteVirkedag ++ " " ++ Dato.toString nesteVirkedag
                         , rightButton = Nothing
                         }
-                    , viewIdag viewState
+                    , viewDag viewState
                     ]
 
         _ ->
@@ -271,10 +275,10 @@ teammedlemBytteAnimasjonstid =
     200
 
 
-viewIdag : ViewState -> Html Msg
-viewIdag viewState =
+viewDag : ViewState -> Html Msg
+viewDag viewState =
     case viewState of
-        IngenAnimasjon standupVert _ ->
+        StandupHost standupVert animasjonState ->
             div
                 [ Attributes.css
                     [ Css.displayFlex
@@ -284,31 +288,34 @@ viewIdag viewState =
                 ]
                 [ p [] [ text "Den som skal holde standup er" ]
                 , div [ Attributes.css [ Css.height (Css.px 75), Css.overflow Css.hidden, Css.textAlign Css.center ] ]
-                    [ h1 [] [ text (Teammedlem.navn standupVert) ]
-                    , h1 [] [ text (Teammedlem.navn standupVert) ]
-                    ]
-                , Button.button VelgNyPersonIDag (Teammedlem.navn standupVert ++ " kan ikke")
+                    (case animasjonState of
+                        IngenAnimasjon _ ->
+                            [ h1 [] [ text (Teammedlem.navn standupVert) ]
+                            , h1 [] [ text (Teammedlem.navn standupVert) ]
+                            ]
+
+                        BytterTeammedlem { til } _ ->
+                            [ h1
+                                [ Attributes.css
+                                    [ Css.transform (Css.translateY (Css.px -56.7))
+                                    , Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ]
+                                    ]
+                                ]
+                                [ text (Teammedlem.navn standupVert) ]
+                            , h1
+                                [ Attributes.css
+                                    [ Css.transform (Css.translateY (Css.px -56.7))
+                                    , Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ]
+                                    ]
+                                ]
+                                [ text (Teammedlem.navn til) ]
+                            ]
+                    )
+                , Button.button VelgNyPerson (Teammedlem.navn standupVert ++ " kan ikke")
                     |> Button.toHtml
                 ]
 
-        BytterTeammedlem { fra, til } _ ->
-            div
-                [ Attributes.css
-                    [ Css.displayFlex
-                    , Css.flexDirection Css.column
-                    , Css.alignItems Css.center
-                    ]
-                ]
-                [ p [] [ text "Den som skal holde standup er" ]
-                , div [ Attributes.css [ Css.height (Css.px 75), Css.overflow Css.hidden, Css.textAlign Css.center ] ]
-                    [ h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ] ] ] [ text (Teammedlem.navn fra) ]
-                    , h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ] ] ] [ text (Teammedlem.navn til) ]
-                    ]
-                , Button.button VelgNyPersonIDag (Teammedlem.navn fra ++ " kan ikke")
-                    |> Button.toHtml
-                ]
-
-        IngenKunne ->
+        IngenStandupHost ->
             text "Da kunne visst ingen da..."
 
 
