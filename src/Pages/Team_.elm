@@ -2,6 +2,7 @@ module Pages.Team_ exposing (Model, Msg, page)
 
 import Api
 import Css
+import Css.Transitions
 import DatabaseApiToken exposing (DatabaseApiToken)
 import Dato exposing (Dato)
 import Effect exposing (Effect)
@@ -118,7 +119,7 @@ update msg model =
                                     | dagensRekkefølge = rest
                                     , viewState = nesteState record.viewState
                                 }
-                            , Process.sleep 250
+                            , Process.sleep 200
                                 |> Task.perform (always AnimasjonFerdig)
                                 |> Effect.sendCmd
                             )
@@ -295,12 +296,15 @@ viewIdag viewState =
                     ]
                 ]
                 [ p [] [ text "Den som skal holde standup er" ]
-                , h1 [] [ text (Teammedlem.navn standupVert) ]
+                , div [ Attributes.css [ Css.height (Css.px 75), Css.overflow Css.hidden, Css.textAlign Css.center ] ]
+                    [ h1 [] [ text (Teammedlem.navn standupVert) ]
+                    , h1 [] [ text (Teammedlem.navn standupVert) ]
+                    ]
                 , Button.button VelgNyPersonIDag (Teammedlem.navn standupVert ++ " kan ikke")
                     |> Button.toHtml
                 ]
 
-        BytterTeammedlem { fra } _ ->
+        BytterTeammedlem { fra, til } _ ->
             div
                 [ Attributes.css
                     [ Css.displayFlex
@@ -309,7 +313,10 @@ viewIdag viewState =
                     ]
                 ]
                 [ p [] [ text "Den som skal holde standup er" ]
-                , h1 [] [ text (Teammedlem.navn fra) ]
+                , div [ Attributes.css [ Css.height (Css.px 75), Css.overflow Css.hidden, Css.textAlign Css.center ] ]
+                    [ h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform 200 ] ] ] [ text (Teammedlem.navn fra) ]
+                    , h1 [ Attributes.css [ Css.transform (Css.translateY (Css.px -56.7)), Css.Transitions.transition [ Css.Transitions.transform 200 ] ] ] [ text (Teammedlem.navn til) ]
+                    ]
                 , Button.button VelgNyPersonIDag (Teammedlem.navn fra ++ " kan ikke")
                     |> Button.toHtml
                 ]
