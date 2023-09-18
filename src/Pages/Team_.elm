@@ -96,7 +96,7 @@ update msg model =
                                         |> Dato.toSeed
                                         |> Random.step (Random.List.shuffle (Team.medlemmer team))
                                         |> Tuple.first
-                                , viewState = initViewState dagensRekkefølge
+                                , viewState = initViewState team dato
                                 , valgtDag = Idag
                                 , team = team
                                 }
@@ -154,15 +154,36 @@ update msg model =
         EndreFane valgtDag ->
             case model of
                 Success modelInfo ->
-                    ( Success { modelInfo | valgtDag = valgtDag }, Effect.none )
+                    ( Success
+                        { modelInfo
+                            | valgtDag = valgtDag
+                            , viewState =
+                                case valgtDag of
+                                    Idag ->
+                                        initViewState modelInfo.team modelInfo.dagensDato
+
+                                    NesteArbeidsdag ->
+                                        modelInfo.dagensDato
+                                            |> Dato.nesteArbeidsdag
+                                            |> initViewState modelInfo.team
+                        }
+                    , Effect.none
+                    )
 
                 _ ->
                     ( model, Effect.none )
 
 
-initViewState : List Teammedlem -> ViewState
-initViewState teammedlemmer =
-    case teammedlemmer of
+initViewState : Team -> Dato -> ViewState
+initViewState team dato =
+    let
+        rekkefølge =
+            dato
+                |> Dato.toSeed
+                |> Random.step (Random.List.shuffle (Team.medlemmer team))
+                |> Tuple.first
+    in
+    case rekkefølge of
         first :: rest ->
             IngenAnimasjon first rest
 
@@ -277,7 +298,7 @@ viewContent model =
                         , rowText = Dato.toUkedagString nesteVirkedag ++ " " ++ Dato.toString nesteVirkedag
                         , rightButton = Nothing
                         }
-                    , viewNesteVirkedag morgensdagensRekkefølge
+                    , viewIdag viewState
                     ]
 
         _ ->
