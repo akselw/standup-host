@@ -200,7 +200,6 @@ view model =
                 [ Css.displayFlex
                 , Css.flexDirection Css.column
                 , Css.fontFamilies [ "Open Sans", "sans-serif" ]
-                , Css.fontSize (Css.px 14)
                 , Css.width (Css.pct 100)
                 , Css.color (Css.rgb 51 51 51)
                 , Css.alignItems Css.center
@@ -300,25 +299,32 @@ viewDag viewState =
                     ]
                 ]
                 [ p [] [ text "Den som skal holde standup er" ]
-                , div [ Attributes.css [ Css.height (Css.px 75), Css.overflow Css.hidden, Css.textAlign Css.center ] ]
+                , div
+                    [ Attributes.css
+                        [ Css.height (Css.px (nameRenderedFontSize + 2 * nameMargin))
+                        , Css.marginBottom (Css.px 16)
+                        , Css.overflow Css.hidden
+                        , Css.textAlign Css.center
+                        ]
+                    ]
                     (case animasjonState of
                         IngenAnimasjon _ ->
-                            [ h1 [] [ text (Teammedlem.navn standupVert) ]
-                            , h1 [] [ text (Teammedlem.navn standupVert) ]
+                            [ p [ Attributes.css [ nameStyle ] ] [ text (Teammedlem.navn standupVert) ]
+                            , p [ Attributes.css [ nameStyle ] ] [ text (Teammedlem.navn standupVert) ]
                             ]
 
                         BytterTeammedlem { til } _ ->
-                            [ h1
+                            [ p
                                 [ Attributes.css
-                                    [ Css.transform (Css.translateY (Css.px -56.7))
-                                    , Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ]
+                                    [ nameStyle
+                                    , animatingNameStyle
                                     ]
                                 ]
                                 [ text (Teammedlem.navn standupVert) ]
-                            , h1
+                            , p
                                 [ Attributes.css
-                                    [ Css.transform (Css.translateY (Css.px -56.7))
-                                    , Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ]
+                                    [ nameStyle
+                                    , animatingNameStyle
                                     ]
                                 ]
                                 [ text (Teammedlem.navn til) ]
@@ -330,6 +336,39 @@ viewDag viewState =
 
         IngenStandupHost ->
             text "Da kunne visst ingen da..."
+
+
+nameFontSize : Float
+nameFontSize =
+    28
+
+
+nameRenderedFontSize : Float
+nameRenderedFontSize =
+    38
+
+
+nameMargin : Float
+nameMargin =
+    24
+
+
+nameStyle : Css.Style
+nameStyle =
+    Css.batch
+        [ Css.fontSize (Css.px nameFontSize)
+        , Css.fontWeight (Css.int 700)
+        , Css.marginTop (Css.px nameMargin)
+        , Css.marginBottom (Css.px nameMargin)
+        ]
+
+
+animatingNameStyle : Css.Style
+animatingNameStyle =
+    Css.batch
+        [ Css.transform (Css.translateY (Css.px ((nameRenderedFontSize + nameMargin) * -1)))
+        , Css.Transitions.transition [ Css.Transitions.transform teammedlemBytteAnimasjonstid ]
+        ]
 
 
 
