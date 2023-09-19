@@ -107,6 +107,7 @@ viewHeader maybeAccessToken =
             , Css.alignItems Css.center
             , Css.minHeight (Css.px 64)
             , Css.padding2 Css.zero (Css.px 16)
+            , Css.marginBottom (Css.px 32)
             ]
         ]
         [ Link.link Route.Path.Home_ [ text "Hvem har standup?" ]
