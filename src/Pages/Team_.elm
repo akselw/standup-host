@@ -21,6 +21,7 @@ import Teammedlem exposing (Teammedlem)
 import Time exposing (Month(..), Posix)
 import View exposing (View)
 import View.Button as Button
+import View.Media as Media
 
 
 
@@ -224,9 +225,15 @@ viewDatoRad { leftButton, rowText, rightButton } =
     div
         [ Attributes.css
             [ Css.property "display" "grid"
-            , Css.property "grid-template-columns" "1fr auto 1fr"
-            , Css.property "grid-template-areas" "\"left-button middle right-button\""
+            , Css.property "grid-template-columns" "1fr 1fr"
+            , Css.property "grid-template-areas" "\"left-button right-button\"\n\"middle middle \""
+            , Media.breakpoint Media.Tablet
+                [ Css.property "grid-template-columns" "1fr auto 1fr"
+                , Css.property "grid-template-areas" "\"left-button middle right-button\""
+                ]
             , Css.property "gap" "24px"
+            , Css.property "row-gap" "16px"
+            , Css.marginBottom (Css.px 40)
             ]
         ]
         [ leftButton
