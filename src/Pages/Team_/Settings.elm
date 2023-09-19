@@ -827,7 +827,6 @@ viewLeggTilMedlemKnapp leggTilMedlemState =
     case leggTilMedlemState of
         InitialLeggTilMedlemState ->
             Button.button StartÅLeggeTilMedlemTrykket "Legg til"
-                |> Button.withSize Button.Large
                 |> Button.toHtml
 
         _ ->

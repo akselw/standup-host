@@ -34,7 +34,7 @@ button onClick label =
     Button
         { label = label
         , variant = Primary
-        , size = Medium
+        , size = Large
         , type_ = TypeButton onClick
         , isLoading = False
         , disabled = False
@@ -47,7 +47,7 @@ submit label =
     Button
         { label = label
         , variant = Primary
-        , size = Medium
+        , size = Large
         , type_ = TypeSubmit
         , isLoading = False
         , disabled = False

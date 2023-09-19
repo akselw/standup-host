@@ -144,7 +144,6 @@ viewLoggedInButtons accessToken =
             |> Link.toHtml
         , Button.button LoggUtKnappTrykket "Logg ut"
             |> Button.withVariant Button.Tertiary
-            |> Button.withSize Button.Large
             |> Button.toHtml
         ]
 
