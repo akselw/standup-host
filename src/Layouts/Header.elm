@@ -10,7 +10,6 @@ import Html.Styled.Attributes as Attributes
 import Layout exposing (Layout)
 import Route exposing (Route)
 import Route.Path
-import RouteExtras
 import Shared
 import Shared.Model
 import View exposing (View)
@@ -84,13 +83,16 @@ view accessToken { toContentMsg, model, content } =
         [ Css.Global.global
             [ Css.Global.selector "body"
                 [ Css.margin Css.zero
+                , Css.property "min-height" "100vh"
+                , Css.displayFlex
+                , Css.flexDirection Css.column
                 , Css.fontFamilies [ "Open Sans", "Helvetica Neue", "sans-serif" ]
                 ]
             ]
         , viewHeader accessToken
             |> Html.map toContentMsg
         ]
-            ++ content.body
+            ++ [ div [] content.body ]
             ++ [ viewFooter ]
     }
 
@@ -159,7 +161,8 @@ viewFooter : Html msg
 viewFooter =
     footer
         [ Attributes.css
-            [ Css.marginTop (Css.px 128)
+            [ Css.paddingTop (Css.px 128)
+            , Css.marginTop Css.auto
             , Css.marginBottom (Css.px 40)
             , Css.displayFlex
             , Css.flexDirection Css.column
