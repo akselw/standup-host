@@ -366,7 +366,8 @@ viewDag viewState =
                 ]
 
         IngenStandupHost ->
-            text "Da kunne visst ingen da..."
+            div [ Attributes.css [ Css.marginTop (Css.px 80) ] ]
+                [ text "Da kunne visst ingen da..." ]
 
 
 nameFontSize : Float
