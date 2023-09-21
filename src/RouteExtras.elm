@@ -24,6 +24,9 @@ isProtected path =
         MineTeam ->
             True
 
+        MineTeam_LeggTil ->
+            True
+
         Oauth ->
             True
 
