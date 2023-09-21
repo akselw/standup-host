@@ -182,10 +182,19 @@ update apiKey accessToken msg model =
                 }
             )
 
-        CreateTeamResponse result ->
+        CreateTeamResponse (Ok teamSummary) ->
+            ( model
+            , Effect.pushRoute
+                { path = Route.Path.Team__Settings { team = TeamSummary.shortname teamSummary }
+                , query = Dict.empty
+                , hash = Nothing
+                }
+            )
+
+        CreateTeamResponse (Err error) ->
             case model.formState of
-                Editing form ->
-                    ( model, Effect.none )
+                Saving form ->
+                    ( { model | formState = Failure error form }, Effect.none )
 
                 _ ->
                     ( model, Effect.none )
