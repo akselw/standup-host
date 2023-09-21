@@ -97,7 +97,7 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Min side"
+    { title = "Hvem har standup? | Mine team"
     , body =
         case model of
             Loading ->
