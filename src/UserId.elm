@@ -1,6 +1,7 @@
-module UserId exposing (UserId, decoder, equals, toString)
+module UserId exposing (UserId, decoder, encode, equals, toString)
 
 import Json.Decode exposing (Decoder)
+import Json.Encode
 
 
 type UserId
@@ -21,3 +22,8 @@ decoder : Decoder UserId
 decoder =
     Json.Decode.string
         |> Json.Decode.map UserId
+
+
+encode : UserId -> Json.Encode.Value
+encode (UserId userId) =
+    Json.Encode.string userId

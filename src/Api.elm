@@ -1,4 +1,13 @@
-module Api exposing (checkShortnameUniqueness, getTeam, getTeamsForUser, leggTilTeammedlem, slettTeammedlem, updateTeam, updateTeammedlemNavn)
+module Api exposing
+    ( checkShortnameUniqueness
+    , createTeam
+    , getTeam
+    , getTeamsForUser
+    , leggTilTeammedlem
+    , slettTeammedlem
+    , updateTeam
+    , updateTeammedlemNavn
+    )
 
 import AccessToken exposing (AccessToken)
 import DatabaseApiToken exposing (DatabaseApiToken)
@@ -6,6 +15,7 @@ import Effect exposing (Effect)
 import Http
 import Json.Decode exposing (Decoder)
 import Json.Encode
+import LeggTilTeamForm exposing (ValidatedLeggTilTeamForm)
 import ShortnameUniqueness exposing (ShortnameUniquenessCheck)
 import Task exposing (Task)
 import Team exposing (Team)
@@ -158,6 +168,23 @@ updateTeam apiKey msg accessToken form =
             , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
             ]
         , body = TeamSettingsForm.encode form
+        , expect = expectSingleElement msg TeamSummary.decoder
+        }
+
+
+createTeam : DatabaseApiToken -> (Result Http.Error TeamSummary -> msg) -> AccessToken -> ValidatedLeggTilTeamForm -> Effect msg
+createTeam apiKey msg accessToken form =
+    addToDatabase
+        { apiKey = apiKey
+        , accessToken = accessToken
+        , table = "team"
+        , query =
+            [ Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            ]
+        , body =
+            accessToken
+                |> AccessToken.userId
+                |> LeggTilTeamForm.encode form
         , expect = expectSingleElement msg TeamSummary.decoder
         }
 

@@ -154,7 +154,21 @@ update apiKey accessToken msg model =
         LagreTrykket ->
             case model.formState of
                 Editing form ->
-                    ( model, Effect.none )
+                    case LeggTilTeamForm.validate model.shortnameUniqueness form of
+                        Just validatedForm ->
+                            ( { model | formState = Saving validatedForm }
+                            , Api.createTeam apiKey CreateTeamResponse accessToken validatedForm
+                            )
+
+                        Nothing ->
+                            ( { model
+                                | formState =
+                                    form
+                                        |> LeggTilTeamForm.visAlleFeilmeldinger
+                                        |> Editing
+                              }
+                            , Effect.none
+                            )
 
                 _ ->
                     ( model, Effect.none )

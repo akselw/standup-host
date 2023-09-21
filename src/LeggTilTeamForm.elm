@@ -2,6 +2,7 @@ module LeggTilTeamForm exposing (LeggTilTeamForm, ValidatedLeggTilTeamForm, enco
 
 import Json.Encode
 import ShortnameUniqueness exposing (ShortnameUniqueness)
+import UserId exposing (UserId)
 
 
 type LeggTilTeamForm
@@ -150,9 +151,10 @@ fromValidated (ValidatedForm form) =
 --- Encoding ---
 
 
-encode : ValidatedLeggTilTeamForm -> Json.Encode.Value
-encode (ValidatedForm form) =
+encode : ValidatedLeggTilTeamForm -> UserId -> Json.Encode.Value
+encode (ValidatedForm form) userId =
     Json.Encode.object
         [ ( "name", Json.Encode.string form.navn )
         , ( "shortname", Json.Encode.string form.shortname )
+        , ( "owner_id", UserId.encode userId )
         ]
