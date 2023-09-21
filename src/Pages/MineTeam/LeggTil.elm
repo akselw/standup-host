@@ -1,11 +1,15 @@
 module Pages.MineTeam.LeggTil exposing (Model, Msg, page)
 
+import Css
 import Effect exposing (Effect)
+import Html.Styled exposing (..)
+import Html.Styled.Attributes as Attributes
 import Layouts
 import Page exposing (Page)
 import Route exposing (Route)
 import Shared
 import View exposing (View)
+import View.Page as Page
 
 
 page : Shared.Model -> Route () -> Page Model Msg
@@ -73,4 +77,9 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    View.fromString "Pages.MineTeam.LeggTil"
+    { title = "Hvem har standup? | Legg til team"
+    , body =
+        Page.viewPageWrapper
+            [ h1 [] [ text "Legg til team" ]
+            ]
+    }
