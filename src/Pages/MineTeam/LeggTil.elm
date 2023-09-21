@@ -1,6 +1,11 @@
 module Pages.MineTeam.LeggTil exposing (Model, Msg, page)
 
+import AccessToken exposing (AccessToken)
+import Api
+import Auth
 import Css
+import DatabaseApiToken exposing (DatabaseApiToken)
+import Dict
 import Effect exposing (Effect)
 import Html.Styled as Html exposing (..)
 import Html.Styled.Attributes as Attributes
@@ -10,6 +15,7 @@ import Layouts
 import LeggTilTeamForm exposing (LeggTilTeamForm, ValidatedLeggTilTeamForm)
 import Page exposing (Page)
 import Route exposing (Route)
+import Route.Path
 import Shared
 import ShortnameUniqueness exposing (ShortnameUniqueness, ShortnameUniquenessCheck)
 import TeamSummary exposing (TeamSummary)
@@ -19,11 +25,11 @@ import View.Page as Page
 import View.TextInput as TextInput
 
 
-page : Shared.Model -> Route () -> Page Model Msg
-page shared route =
+page : Auth.User -> Shared.Model -> Route () -> Page Model Msg
+page user shared _ =
     Page.new
         { init = init
-        , update = update
+        , update = update shared.apiKey user.accessToken
         , subscriptions = subscriptions
         , view = view
         }
@@ -77,13 +83,20 @@ type Msg
     | CreateTeamResponse (Result Http.Error TeamSummary)
 
 
-update : Msg -> Model -> ( Model, Effect Msg )
-update msg model =
+update : DatabaseApiToken -> AccessToken -> Msg -> Model -> ( Model, Effect Msg )
+update apiKey accessToken msg model =
     case msg of
         NavnOppdatert string ->
             case model.formState of
                 Editing form ->
-                    ( model, Effect.none )
+                    ( { model
+                        | formState =
+                            form
+                                |> LeggTilTeamForm.oppdaterNavn string
+                                |> Editing
+                      }
+                    , Effect.none
+                    )
 
                 _ ->
                     ( model, Effect.none )
@@ -91,7 +104,14 @@ update msg model =
         NavnMistetFokus ->
             case model.formState of
                 Editing form ->
-                    ( model, Effect.none )
+                    ( { model
+                        | formState =
+                            form
+                                |> LeggTilTeamForm.visFeilmeldingNavn
+                                |> Editing
+                      }
+                    , Effect.none
+                    )
 
                 _ ->
                     ( model, Effect.none )
@@ -99,7 +119,14 @@ update msg model =
         ShortnameOppdatert string ->
             case model.formState of
                 Editing form ->
-                    ( model, Effect.none )
+                    ( { model
+                        | formState =
+                            form
+                                |> LeggTilTeamForm.oppdaterShortname string
+                                |> Editing
+                      }
+                    , Api.checkShortnameUniqueness apiKey (ShortnameUniquenessResponse string) string
+                    )
 
                 _ ->
                     ( model, Effect.none )
@@ -107,18 +134,22 @@ update msg model =
         ShortnameMistetFokus ->
             case model.formState of
                 Editing form ->
-                    ( model, Effect.none )
+                    ( { model
+                        | formState =
+                            form
+                                |> LeggTilTeamForm.visFeilmeldingShortname
+                                |> Editing
+                      }
+                    , Effect.none
+                    )
 
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameUniquenessResponse string result ->
-            case model.formState of
-                Editing form ->
-                    ( model, Effect.none )
-
-                _ ->
-                    ( model, Effect.none )
+        ShortnameUniquenessResponse shortname result ->
+            ( { model | shortnameUniqueness = ShortnameUniqueness.insert shortname result model.shortnameUniqueness }
+            , Effect.none
+            )
 
         LagreTrykket ->
             case model.formState of
@@ -129,12 +160,13 @@ update msg model =
                     ( model, Effect.none )
 
         AvbrytTrykket ->
-            case model.formState of
-                Editing form ->
-                    ( model, Effect.none )
-
-                _ ->
-                    ( model, Effect.none )
+            ( model
+            , Effect.pushRoute
+                { path = Route.Path.MineTeam
+                , query = Dict.empty
+                , hash = Nothing
+                }
+            )
 
         CreateTeamResponse result ->
             case model.formState of
