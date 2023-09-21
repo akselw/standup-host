@@ -18,6 +18,7 @@ import View exposing (View)
 import View.Button as Button
 import View.Link as Link
 import View.LinkButton as LinkButton
+import View.Page as Page
 
 
 page : Auth.User -> Shared.Model -> Route () -> Page Model Msg
@@ -106,7 +107,7 @@ view model =
                 []
 
             Success teams ->
-                [ div [ Attributes.css [ Css.maxWidth (Css.px 632), Css.margin Css.auto, Css.padding2 Css.zero (Css.px 16) ] ]
+                Page.viewPageWrapper
                     [ h1 [] [ text "Mine team" ]
                     , div
                         [ Attributes.css
@@ -121,7 +122,6 @@ view model =
                             |> List.map viewTeam
                         )
                     ]
-                ]
     }
 
 
