@@ -259,7 +259,7 @@ successUpdate apiKey accessToken msg model =
         LagreSkjemaEndringerTrykket ->
             case model.formState of
                 Editing shortnameUniqueness form ->
-                    case TeamSettingsForm.validate form of
+                    case TeamSettingsForm.validate shortnameUniqueness form of
                         Just validated ->
                             ( { model | formState = SavingForm validated }
                             , Api.updateTeam apiKey UpdateTeamSummaryResponse accessToken validated

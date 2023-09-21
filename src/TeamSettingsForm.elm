@@ -29,7 +29,7 @@ type TeamSettingsForm
         , shortname : String
         , visFeilmeldingNavn : Bool
         , visFeilmeldingShortname : Bool
-        , teamId : TeamId
+        , team : Team
         }
 
 
@@ -40,7 +40,7 @@ init team =
         , shortname = Team.shortname team
         , visFeilmeldingNavn = False
         , visFeilmeldingShortname = False
-        , teamId = Team.id team
+        , team = team
         }
 
 
@@ -140,18 +140,18 @@ type ValidatedTeamSettingsForm
     = ValidatedForm
         { navn : String
         , shortname : String
-        , teamId : TeamId
+        , team : Team
         }
 
 
-validate : TeamSettingsForm -> Maybe ValidatedTeamSettingsForm
-validate (Form form) =
-    if navnErGyldig form.navn && shortnameErGyldig form.shortname then
+validate : ShortnameUniqueness -> TeamSettingsForm -> Maybe ValidatedTeamSettingsForm
+validate shortnameUniqueness (Form form) =
+    if navnErGyldig form.navn && shortnameErGyldig form.shortname && shortnameErUnique shortnameUniqueness form then
         Just
             (ValidatedForm
                 { navn = form.navn
                 , shortname = form.shortname
-                , teamId = form.teamId
+                , team = form.team
                 }
             )
 
@@ -159,9 +159,16 @@ validate (Form form) =
         Nothing
 
 
+shortnameErUnique : ShortnameUniqueness -> { r | shortname : String, team : Team } -> Bool
+shortnameErUnique shortnameUniqueness form =
+    Team.shortname form.team == form.shortname || ShortnameUniqueness.isUnique shortnameUniqueness form.shortname
+
+
 teamId : ValidatedTeamSettingsForm -> String
 teamId (ValidatedForm form) =
-    TeamId.toString form.teamId
+    form.team
+        |> Team.id
+        |> TeamId.toString
 
 
 fromValidated : ValidatedTeamSettingsForm -> TeamSettingsForm
@@ -171,7 +178,7 @@ fromValidated (ValidatedForm form) =
         , shortname = form.shortname
         , visFeilmeldingNavn = False
         , visFeilmeldingShortname = False
-        , teamId = form.teamId
+        , team = form.team
         }
 
 
