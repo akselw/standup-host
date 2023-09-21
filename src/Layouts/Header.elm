@@ -152,7 +152,6 @@ viewNonLoggedInButtons : Html msg
 viewNonLoggedInButtons =
     nav []
         [ LinkButton.linkButton Route.Path.Login [ text "Logg inn" ]
-            |> LinkButton.withSize Button.Large
             |> LinkButton.toHtml
         ]
 

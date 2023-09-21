@@ -37,7 +37,7 @@ linkButton path children =
         { path = path
         , children = children
         , variant = Button.Primary
-        , size = Button.Medium
+        , size = Button.Large
         }
 
 
