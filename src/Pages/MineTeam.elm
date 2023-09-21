@@ -121,6 +121,10 @@ view model =
                         (teams
                             |> List.map viewTeam
                         )
+                    , div [ Attributes.css [ Css.property "width" "fit-content" ] ]
+                        [ LinkButton.linkButton Route.Path.MineTeam_LeggTil [ text "Legg til team" ]
+                            |> LinkButton.toHtml
+                        ]
                     ]
     }
 
