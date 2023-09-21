@@ -1,9 +1,9 @@
 module Pages.MineTeam.LeggTil exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
-import Route exposing (Route)
-import Html
+import Layouts
 import Page exposing (Page)
+import Route exposing (Route)
 import Shared
 import View exposing (View)
 
@@ -16,6 +16,14 @@ page shared route =
         , subscriptions = subscriptions
         , view = view
         }
+        |> Page.withLayout toLayout
+
+
+{-| Use the header layout on this page
+-}
+toLayout : Model -> Layouts.Layout Msg
+toLayout model =
+    Layouts.Header {}
 
 
 
