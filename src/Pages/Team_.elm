@@ -211,9 +211,31 @@ view model =
     }
 
 
-viewDatoRadButton : String -> ( Msg, String ) -> Html Msg
-viewDatoRadButton gridArea ( msg, label ) =
-    span [ Attributes.css [ Css.property "grid-area" gridArea ] ]
+type DatoButtonPlacement
+    = Left
+    | Right
+
+
+viewDatoRadButton : DatoButtonPlacement -> ( Msg, String ) -> Html Msg
+viewDatoRadButton buttonPlacement ( msg, label ) =
+    span
+        [ case buttonPlacement of
+            Left ->
+                Attributes.css
+                    [ Css.property "grid-area" "left-button"
+                    , Media.breakpoint Media.Tablet
+                        [ Css.property "justify-self" "end"
+                        ]
+                    ]
+
+            Right ->
+                Attributes.css
+                    [ Css.property "grid-area" "right-button"
+                    , Media.breakpoint Media.Tablet
+                        [ Css.property "justify-self" "start"
+                        ]
+                    ]
+        ]
         [ Button.button msg label
             |> Button.withVariant Button.Secondary
             |> Button.toHtml
@@ -233,11 +255,13 @@ viewDatoRad { leftButton, rowText, rightButton } =
                 ]
             , Css.property "gap" "24px"
             , Css.property "row-gap" "16px"
+            , Css.property "justify-items" "center"
+            , Css.width (Css.pct 100)
             , Css.marginBottom (Css.px 40)
             ]
         ]
         [ leftButton
-            |> Maybe.map (viewDatoRadButton "left-button")
+            |> Maybe.map (viewDatoRadButton Left)
             |> Maybe.withDefault (text "")
         , span
             [ Attributes.css
@@ -247,7 +271,7 @@ viewDatoRad { leftButton, rowText, rightButton } =
             ]
             [ text rowText ]
         , rightButton
-            |> Maybe.map (viewDatoRadButton "right-button")
+            |> Maybe.map (viewDatoRadButton Right)
             |> Maybe.withDefault (text "")
         ]
 
