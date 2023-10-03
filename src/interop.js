@@ -9,6 +9,14 @@ export const flags = ({ env }) => ({
     accessToken: localStorage.getItem("hvem-har-standup:access_token"),
 })
 
+const isProd = () => {
+    try {
+        return !new URL(window.location.href).host.includes("localhost")
+    } catch {
+        return true
+    }
+}
+
 // This is called AFTER your Elm app starts up
 //
 // Here you can work with `app.ports` to send messages
@@ -21,18 +29,22 @@ export const onReady = async ({ app, env }) => {
 
     app.ports.authentication.subscribe(async (action) => {
         switch (action.type) {
-            case "LOGIN":
+            case "LOGIN": {
+                const hostname = isProd()
+                    ? "https://hvemharstandup.no/oauth"
+                    : "http://localhost:1234/oauth"
                 let { data, error } = await supabase.auth.signInWithOAuth({
                     provider: "github",
                     options: {
                         redirectTo:
-                            "http://localhost:1234/oauth" +
+                            hostname +
                             (action.redirectUrl
                                 ? `?redirect=${action.redirectUrl}`
                                 : ""),
                     },
                 })
                 return
+            }
             default:
                 return
         }
