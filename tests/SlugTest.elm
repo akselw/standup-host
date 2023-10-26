@@ -40,5 +40,15 @@ suite =
                     "test--test"
                         |> Slug.fromString
                         |> Expect.equal (Err WrongFormat)
+            , test "reject strings in blacklist: settings" <|
+                \_ ->
+                    "settings"
+                        |> Slug.fromString
+                        |> Expect.equal (Err SlugInBlacklist)
+            , test "reject strings in blacklist: mine-team" <|
+                \_ ->
+                    "mine-team"
+                        |> Slug.fromString
+                        |> Expect.equal (Err SlugInBlacklist)
             ]
         ]
