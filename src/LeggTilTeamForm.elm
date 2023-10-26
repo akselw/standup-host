@@ -86,13 +86,6 @@ navnErGyldig string =
     ikkeTomStreng string
 
 
-slugErGyldig : String -> Bool
-slugErGyldig string =
-    ikkeTomStreng string
-        && String.all (\char -> Char.isAlphaNum char || char == '-') string
-        && (String.length string >= 3)
-
-
 feilmeldingNavn : LeggTilTeamForm -> Maybe String
 feilmeldingNavn (Form form) =
     if form.visFeilmeldingNavn && not (navnErGyldig form.navn) then
@@ -104,9 +97,16 @@ feilmeldingNavn (Form form) =
 
 feilmeldingSlug : LeggTilTeamForm -> Maybe String
 feilmeldingSlug (Form form) =
-    if form.visFeilmeldingSlug && not (slugErGyldig form.slug) then
-        Just "Slug må kun inneholde bokstaver, tall og bindestreker, og kan ikke være tomt"
-        -- TODO: Endre feilmelding basert på type feil
+    if form.visFeilmeldingSlug then
+        case Slug.fromString form.slug of
+            Err Slug.WrongFormat ->
+                Just "Slug må kun inneholde bokstaver, tall og bindestreker, og kan ikke være tomt"
+
+            Err Slug.SlugInBlacklist ->
+                Just "Ikke gyldig slug"
+
+            Ok _ ->
+                Nothing
 
     else
         Nothing
@@ -142,7 +142,7 @@ type ValidatedLeggTilTeamForm
 
 validate : SlugUniqueness -> LeggTilTeamForm -> Maybe ValidatedLeggTilTeamForm
 validate slugUniqueness (Form form) =
-    if navnErGyldig form.navn && slugErGyldig form.slug && SlugUniqueness.isUnique slugUniqueness form.slug then
+    if navnErGyldig form.navn && SlugUniqueness.isUnique slugUniqueness form.slug then
         form.slug
             |> Slug.fromString
             |> Result.toMaybe
