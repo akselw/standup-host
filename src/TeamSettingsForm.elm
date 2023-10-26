@@ -18,6 +18,7 @@ module TeamSettingsForm exposing
     )
 
 import Json.Encode
+import Slug exposing (Slug)
 import SlugUniqueness exposing (SlugUniqueness)
 import Team exposing (Team)
 import TeamId exposing (TeamId)
@@ -90,13 +91,6 @@ navnErGyldig string =
     ikkeTomStreng string
 
 
-slugErGyldig : String -> Bool
-slugErGyldig string =
-    ikkeTomStreng string
-        && String.all (\char -> Char.isAlphaNum char || char == '-') string
-        && (String.length string >= 3)
-
-
 feilmeldingNavn : TeamSettingsForm -> Maybe String
 feilmeldingNavn (Form form) =
     if form.visFeilmeldingNavn && not (navnErGyldig form.navn) then
@@ -108,9 +102,16 @@ feilmeldingNavn (Form form) =
 
 feilmeldingSlug : TeamSettingsForm -> Maybe String
 feilmeldingSlug (Form form) =
-    if form.visFeilmeldingSlug && not (slugErGyldig form.slug) then
-        Just "Slug må kun inneholde bokstaver, tall og bindestreker, og kan ikke være tomt"
-        -- TODO: Endre feilmelding basert på type feil
+    if form.visFeilmeldingSlug then
+        case Slug.fromString form.slug of
+            Err Slug.WrongFormat ->
+                Just "Slug må kun inneholde bokstaver, tall og bindestreker, og kan ikke være tomt"
+
+            Err Slug.SlugInBlacklist ->
+                Just "Ikke gyldig slug"
+
+            Ok _ ->
+                Nothing
 
     else
         Nothing
@@ -140,21 +141,25 @@ visAlleFeilmeldinger form =
 type ValidatedTeamSettingsForm
     = ValidatedForm
         { navn : String
-        , slug : String
+        , slug : Slug
         , team : Team
         }
 
 
 validate : SlugUniqueness -> TeamSettingsForm -> Maybe ValidatedTeamSettingsForm
 validate slugUniqueness (Form form) =
-    if navnErGyldig form.navn && slugErGyldig form.slug && slugErUnique slugUniqueness form then
-        Just
-            (ValidatedForm
-                { navn = form.navn
-                , slug = form.slug
-                , team = form.team
-                }
-            )
+    if navnErGyldig form.navn && slugErUnique slugUniqueness form then
+        form.slug
+            |> Slug.fromString
+            |> Result.toMaybe
+            |> Maybe.map
+                (\slug_ ->
+                    ValidatedForm
+                        { navn = form.navn
+                        , slug = slug_
+                        , team = form.team
+                        }
+                )
 
     else
         Nothing
@@ -176,7 +181,7 @@ fromValidated : ValidatedTeamSettingsForm -> TeamSettingsForm
 fromValidated (ValidatedForm form) =
     Form
         { navn = form.navn
-        , slug = form.slug
+        , slug = Slug.toString form.slug
         , visFeilmeldingNavn = False
         , visFeilmeldingSlug = False
         , team = form.team
@@ -191,5 +196,5 @@ encode : ValidatedTeamSettingsForm -> Json.Encode.Value
 encode (ValidatedForm form) =
     Json.Encode.object
         [ ( "name", Json.Encode.string form.navn )
-        , ( "slug", Json.Encode.string form.slug )
+        , ( "slug", Slug.encode form.slug )
         ]
