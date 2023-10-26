@@ -3,22 +3,22 @@ module TeamSettingsForm exposing
     , ValidatedTeamSettingsForm
     , encode
     , feilmeldingNavn
-    , feilmeldingShortname
+    , feilmeldingSlug
     , fromValidated
     , init
     , navn
     , oppdaterNavn
-    , oppdaterShortname
-    , shortname
+    , oppdaterSlug
+    , slug
     , teamId
     , validate
     , visAlleFeilmeldinger
     , visFeilmeldingNavn
-    , visFeilmeldingShortname
+    , visFeilmeldingSlug
     )
 
 import Json.Encode
-import ShortnameUniqueness exposing (ShortnameUniqueness)
+import SlugUniqueness exposing (SlugUniqueness)
 import Team exposing (Team)
 import TeamId exposing (TeamId)
 import UserId exposing (UserId)
@@ -27,9 +27,9 @@ import UserId exposing (UserId)
 type TeamSettingsForm
     = Form
         { navn : String
-        , shortname : String
+        , slug : String
         , visFeilmeldingNavn : Bool
-        , visFeilmeldingShortname : Bool
+        , visFeilmeldingSlug : Bool
         , team : Team
         }
 
@@ -38,9 +38,9 @@ init : Team -> TeamSettingsForm
 init team =
     Form
         { navn = Team.navn team
-        , shortname = Team.shortname team
+        , slug = Team.slug team
         , visFeilmeldingNavn = False
-        , visFeilmeldingShortname = False
+        , visFeilmeldingSlug = False
         , team = team
         }
 
@@ -54,9 +54,9 @@ navn (Form form) =
     form.navn
 
 
-shortname : TeamSettingsForm -> String
-shortname (Form form) =
-    form.shortname
+slug : TeamSettingsForm -> String
+slug (Form form) =
+    form.slug
 
 
 
@@ -68,9 +68,9 @@ oppdaterNavn navn_ (Form form) =
     Form { form | navn = navn_ }
 
 
-oppdaterShortname : String -> TeamSettingsForm -> TeamSettingsForm
-oppdaterShortname shortname_ (Form form) =
-    Form { form | shortname = shortname_ }
+oppdaterSlug : String -> TeamSettingsForm -> TeamSettingsForm
+oppdaterSlug slug_ (Form form) =
+    Form { form | slug = slug_ }
 
 
 
@@ -90,8 +90,8 @@ navnErGyldig string =
     ikkeTomStreng string
 
 
-shortnameErGyldig : String -> Bool
-shortnameErGyldig string =
+slugErGyldig : String -> Bool
+slugErGyldig string =
     ikkeTomStreng string
         && String.all (\char -> Char.isAlphaNum char || char == '-') string
         && (String.length string >= 3)
@@ -106,10 +106,10 @@ feilmeldingNavn (Form form) =
         Nothing
 
 
-feilmeldingShortname : TeamSettingsForm -> Maybe String
-feilmeldingShortname (Form form) =
-    if form.visFeilmeldingShortname && not (shortnameErGyldig form.shortname) then
-        Just "Shortname må kun inneholde bokstaver, tall og bindestreker, og kan ikke være tomt"
+feilmeldingSlug : TeamSettingsForm -> Maybe String
+feilmeldingSlug (Form form) =
+    if form.visFeilmeldingSlug && not (slugErGyldig form.slug) then
+        Just "Slug må kun inneholde bokstaver, tall og bindestreker, og kan ikke være tomt"
         -- TODO: Endre feilmelding basert på type feil
 
     else
@@ -121,16 +121,16 @@ visFeilmeldingNavn (Form form) =
     Form { form | visFeilmeldingNavn = True }
 
 
-visFeilmeldingShortname : TeamSettingsForm -> TeamSettingsForm
-visFeilmeldingShortname (Form form) =
-    Form { form | visFeilmeldingShortname = True }
+visFeilmeldingSlug : TeamSettingsForm -> TeamSettingsForm
+visFeilmeldingSlug (Form form) =
+    Form { form | visFeilmeldingSlug = True }
 
 
 visAlleFeilmeldinger : TeamSettingsForm -> TeamSettingsForm
 visAlleFeilmeldinger form =
     form
         |> visFeilmeldingNavn
-        |> visFeilmeldingShortname
+        |> visFeilmeldingSlug
 
 
 
@@ -140,18 +140,18 @@ visAlleFeilmeldinger form =
 type ValidatedTeamSettingsForm
     = ValidatedForm
         { navn : String
-        , shortname : String
+        , slug : String
         , team : Team
         }
 
 
-validate : ShortnameUniqueness -> TeamSettingsForm -> Maybe ValidatedTeamSettingsForm
-validate shortnameUniqueness (Form form) =
-    if navnErGyldig form.navn && shortnameErGyldig form.shortname && shortnameErUnique shortnameUniqueness form then
+validate : SlugUniqueness -> TeamSettingsForm -> Maybe ValidatedTeamSettingsForm
+validate slugUniqueness (Form form) =
+    if navnErGyldig form.navn && slugErGyldig form.slug && slugErUnique slugUniqueness form then
         Just
             (ValidatedForm
                 { navn = form.navn
-                , shortname = form.shortname
+                , slug = form.slug
                 , team = form.team
                 }
             )
@@ -160,9 +160,9 @@ validate shortnameUniqueness (Form form) =
         Nothing
 
 
-shortnameErUnique : ShortnameUniqueness -> { r | shortname : String, team : Team } -> Bool
-shortnameErUnique shortnameUniqueness form =
-    Team.shortname form.team == form.shortname || ShortnameUniqueness.isUnique shortnameUniqueness form.shortname
+slugErUnique : SlugUniqueness -> { r | slug : String, team : Team } -> Bool
+slugErUnique slugUniqueness form =
+    Team.slug form.team == form.slug || SlugUniqueness.isUnique slugUniqueness form.slug
 
 
 teamId : ValidatedTeamSettingsForm -> String
@@ -176,9 +176,9 @@ fromValidated : ValidatedTeamSettingsForm -> TeamSettingsForm
 fromValidated (ValidatedForm form) =
     Form
         { navn = form.navn
-        , shortname = form.shortname
+        , slug = form.slug
         , visFeilmeldingNavn = False
-        , visFeilmeldingShortname = False
+        , visFeilmeldingSlug = False
         , team = form.team
         }
 
@@ -191,5 +191,5 @@ encode : ValidatedTeamSettingsForm -> Json.Encode.Value
 encode (ValidatedForm form) =
     Json.Encode.object
         [ ( "name", Json.Encode.string form.navn )
-        , ( "shortname", Json.Encode.string form.shortname )
+        , ( "slug", Json.Encode.string form.slug )
         ]

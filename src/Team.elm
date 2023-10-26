@@ -6,7 +6,7 @@ module Team exposing
     , init
     , medlemmer
     , navn
-    , shortname
+    , slug
     , updateTeamSummary
     )
 
@@ -41,9 +41,9 @@ navn (Team { summary }) =
     TeamSummary.navn summary
 
 
-shortname : Team -> String
-shortname (Team { summary }) =
-    TeamSummary.shortname summary
+slug : Team -> String
+slug (Team { summary }) =
+    TeamSummary.slug summary
 
 
 id : Team -> TeamId

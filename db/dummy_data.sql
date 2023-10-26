@@ -1,4 +1,4 @@
-insert into public.team (id, name, shortname, owner_id)
+insert into public.team (id, name, slug, owner_id)
 values ('479351d7-b553-4d4e-ae1f-c1538789afa4', 'Team Oppgjør', 'teamoppgjor', '973015b8-fc47-4023-b9dd-959487a97422'),
        ('4ff22cd0-32ad-485e-8206-caa03952c280', 'Elm-faggruppa', 'elm-2022', '973015b8-fc47-4023-b9dd-959487a97422');
 

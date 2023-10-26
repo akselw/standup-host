@@ -17,7 +17,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
-import ShortnameUniqueness exposing (ShortnameUniqueness, ShortnameUniquenessCheck)
+import SlugUniqueness exposing (SlugUniqueness, SlugUniquenessCheck)
 import TeamSummary exposing (TeamSummary)
 import View exposing (View)
 import View.Button as Button
@@ -49,7 +49,7 @@ toLayout model =
 
 type alias Model =
     { formState : FormState
-    , shortnameUniqueness : ShortnameUniqueness
+    , slugUniqueness : SlugUniqueness
     }
 
 
@@ -62,7 +62,7 @@ type FormState
 init : () -> ( Model, Effect Msg )
 init () =
     ( { formState = Editing LeggTilTeamForm.init
-      , shortnameUniqueness = ShortnameUniqueness.init
+      , slugUniqueness = SlugUniqueness.init
       }
     , Effect.none
     )
@@ -75,9 +75,9 @@ init () =
 type Msg
     = NavnOppdatert String
     | NavnMistetFokus
-    | ShortnameOppdatert String
-    | ShortnameMistetFokus
-    | ShortnameUniquenessResponse String (Result Http.Error ShortnameUniquenessCheck)
+    | SlugOppdatert String
+    | SlugMistetFokus
+    | SlugUniquenessResponse String (Result Http.Error SlugUniquenessCheck)
     | LagreTrykket
     | AvbrytTrykket
     | CreateTeamResponse (Result Http.Error TeamSummary)
@@ -116,28 +116,28 @@ update apiKey accessToken msg model =
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameOppdatert string ->
+        SlugOppdatert string ->
             case model.formState of
                 Editing form ->
                     ( { model
                         | formState =
                             form
-                                |> LeggTilTeamForm.oppdaterShortname string
+                                |> LeggTilTeamForm.oppdaterSlug string
                                 |> Editing
                       }
-                    , Api.checkShortnameUniqueness apiKey (ShortnameUniquenessResponse string) string
+                    , Api.checkSlugUniqueness apiKey (SlugUniquenessResponse string) string
                     )
 
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameMistetFokus ->
+        SlugMistetFokus ->
             case model.formState of
                 Editing form ->
                     ( { model
                         | formState =
                             form
-                                |> LeggTilTeamForm.visFeilmeldingShortname
+                                |> LeggTilTeamForm.visFeilmeldingSlug
                                 |> Editing
                       }
                     , Effect.none
@@ -146,15 +146,15 @@ update apiKey accessToken msg model =
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameUniquenessResponse shortname result ->
-            ( { model | shortnameUniqueness = ShortnameUniqueness.insert shortname result model.shortnameUniqueness }
+        SlugUniquenessResponse slug result ->
+            ( { model | slugUniqueness = SlugUniqueness.insert slug result model.slugUniqueness }
             , Effect.none
             )
 
         LagreTrykket ->
             case model.formState of
                 Editing form ->
-                    case LeggTilTeamForm.validate model.shortnameUniqueness form of
+                    case LeggTilTeamForm.validate model.slugUniqueness form of
                         Just validatedForm ->
                             ( { model | formState = Saving validatedForm }
                             , Api.createTeam apiKey CreateTeamResponse accessToken validatedForm
@@ -185,7 +185,7 @@ update apiKey accessToken msg model =
         CreateTeamResponse (Ok teamSummary) ->
             ( model
             , Effect.pushRoute
-                { path = Route.Path.Team__Settings { team = TeamSummary.shortname teamSummary }
+                { path = Route.Path.Team__Settings { team = TeamSummary.slug teamSummary }
                 , query = Dict.empty
                 , hash = Nothing
                 }
@@ -223,7 +223,7 @@ view model =
                 Editing form ->
                     viewForm
                         { isLoading = False
-                        , shortnameIcon = shortnameStatusIcon form model.shortnameUniqueness
+                        , slugIcon = slugStatusIcon form model.slugUniqueness
                         }
                         form
 
@@ -232,7 +232,7 @@ view model =
                         |> LeggTilTeamForm.fromValidated
                         |> viewForm
                             { isLoading = True
-                            , shortnameIcon = Just TextInput.Checkmark
+                            , slugIcon = Just TextInput.Checkmark
                             }
 
                 Failure error validatedLeggTilTeamForm ->
@@ -241,8 +241,8 @@ view model =
     }
 
 
-viewForm : { isLoading : Bool, shortnameIcon : Maybe TextInput.StatusIcon } -> LeggTilTeamForm -> Html Msg
-viewForm { isLoading, shortnameIcon } form =
+viewForm : { isLoading : Bool, slugIcon : Maybe TextInput.StatusIcon } -> LeggTilTeamForm -> Html Msg
+viewForm { isLoading, slugIcon } form =
     Html.form
         [ onSubmit LagreTrykket
         , Attributes.css
@@ -258,14 +258,14 @@ viewForm { isLoading, shortnameIcon } form =
             |> TextInput.onBlur NavnMistetFokus
             |> TextInput.toHtml
         , form
-            |> LeggTilTeamForm.shortname
-            |> TextInput.input { label = "Shortname", msg = ShortnameOppdatert }
-            |> TextInput.withStatusIcon shortnameIcon
+            |> LeggTilTeamForm.slug
+            |> TextInput.input { label = "Slug", msg = SlugOppdatert }
+            |> TextInput.withStatusIcon slugIcon
             |> TextInput.withDisabled isLoading
-            |> TextInput.withErrorMessage (LeggTilTeamForm.feilmeldingShortname form)
-            |> TextInput.onBlur ShortnameMistetFokus
+            |> TextInput.withErrorMessage (LeggTilTeamForm.feilmeldingSlug form)
+            |> TextInput.onBlur SlugMistetFokus
             |> TextInput.toHtml
-        , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ LeggTilTeamForm.shortname form) }
+        , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ LeggTilTeamForm.slug form) }
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]
             [ Button.button AvbrytTrykket "Avbryt"
                 |> Button.withVariant Button.Secondary
@@ -278,12 +278,12 @@ viewForm { isLoading, shortnameIcon } form =
         ]
 
 
-shortnameStatusIcon : LeggTilTeamForm -> ShortnameUniqueness -> Maybe TextInput.StatusIcon
-shortnameStatusIcon form shortnameUniqueness =
-    if ShortnameUniqueness.isLoading shortnameUniqueness (LeggTilTeamForm.shortname form) then
+slugStatusIcon : LeggTilTeamForm -> SlugUniqueness -> Maybe TextInput.StatusIcon
+slugStatusIcon form slugUniqueness =
+    if SlugUniqueness.isLoading slugUniqueness (LeggTilTeamForm.slug form) then
         Just TextInput.LoadingSpinner
 
-    else if ShortnameUniqueness.isUnique shortnameUniqueness (LeggTilTeamForm.shortname form) then
+    else if SlugUniqueness.isUnique slugUniqueness (LeggTilTeamForm.slug form) then
         Just TextInput.Checkmark
 
     else

@@ -20,7 +20,7 @@ import Route.Path
 import RouteExtras
 import Shared
 import Shared.Model
-import ShortnameUniqueness exposing (ShortnameUniqueness, ShortnameUniquenessCheck)
+import SlugUniqueness exposing (SlugUniqueness, SlugUniquenessCheck)
 import Task
 import Team exposing (Team)
 import TeamSettingsForm exposing (TeamSettingsForm, ValidatedTeamSettingsForm)
@@ -71,7 +71,7 @@ type alias TeamOwnerModel =
 
 type FormState
     = NoForm
-    | Editing ShortnameUniqueness TeamSettingsForm
+    | Editing SlugUniqueness TeamSettingsForm
     | SavingForm ValidatedTeamSettingsForm
     | SavingFormFailure ValidatedTeamSettingsForm Http.Error
 
@@ -109,9 +109,9 @@ type SuccessMsg
     = EndreInnstilingerKnappTrykket
     | NavnOppdatert String
     | NavnMistetFokus
-    | ShortnameOppdatert String
-    | ShortnameMistetFokus
-    | ShortnameUniquenessResponse String (Result Http.Error ShortnameUniquenessCheck)
+    | SlugOppdatert String
+    | SlugMistetFokus
+    | SlugUniquenessResponse String (Result Http.Error SlugUniquenessCheck)
     | LagreSkjemaEndringerTrykket
     | AvbrytSkjemaendringTrykket
     | UpdateTeamSummaryResponse (Result Http.Error TeamSummary)
@@ -183,19 +183,19 @@ successUpdate apiKey accessToken msg model =
                 | formState =
                     model.team
                         |> TeamSettingsForm.init
-                        |> Editing ShortnameUniqueness.init
+                        |> Editing SlugUniqueness.init
               }
             , focusOnInput TeamnavnInput
             )
 
         NavnOppdatert string ->
             case model.formState of
-                Editing shortnameUniqueness form ->
+                Editing slugUniqueness form ->
                     ( { model
                         | formState =
                             form
                                 |> TeamSettingsForm.oppdaterNavn string
-                                |> Editing shortnameUniqueness
+                                |> Editing slugUniqueness
                       }
                     , Effect.none
                     )
@@ -205,12 +205,12 @@ successUpdate apiKey accessToken msg model =
 
         NavnMistetFokus ->
             case model.formState of
-                Editing shortnameUniqueness form ->
+                Editing slugUniqueness form ->
                     ( { model
                         | formState =
                             form
                                 |> TeamSettingsForm.visFeilmeldingNavn
-                                |> Editing shortnameUniqueness
+                                |> Editing slugUniqueness
                       }
                     , Effect.none
                     )
@@ -218,29 +218,29 @@ successUpdate apiKey accessToken msg model =
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameOppdatert string ->
+        SlugOppdatert string ->
             case model.formState of
-                Editing shortnameUniqueness form ->
+                Editing slugUniqueness form ->
                     ( { model
                         | formState =
                             form
-                                |> TeamSettingsForm.oppdaterShortname string
-                                |> Editing shortnameUniqueness
+                                |> TeamSettingsForm.oppdaterSlug string
+                                |> Editing slugUniqueness
                       }
-                    , Api.checkShortnameUniqueness apiKey (ShortnameUniquenessResponse string) string
+                    , Api.checkSlugUniqueness apiKey (SlugUniquenessResponse string) string
                     )
 
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameMistetFokus ->
+        SlugMistetFokus ->
             case model.formState of
-                Editing shortnameUniqueness form ->
+                Editing slugUniqueness form ->
                     ( { model
                         | formState =
                             form
-                                |> TeamSettingsForm.visFeilmeldingShortname
-                                |> Editing shortnameUniqueness
+                                |> TeamSettingsForm.visFeilmeldingSlug
+                                |> Editing slugUniqueness
                       }
                     , Effect.none
                     )
@@ -248,18 +248,18 @@ successUpdate apiKey accessToken msg model =
                 _ ->
                     ( model, Effect.none )
 
-        ShortnameUniquenessResponse shortname result ->
+        SlugUniquenessResponse slug result ->
             case model.formState of
-                Editing shortnameUniqueness form ->
-                    ( { model | formState = Editing (ShortnameUniqueness.insert shortname result shortnameUniqueness) form }, Effect.none )
+                Editing slugUniqueness form ->
+                    ( { model | formState = Editing (SlugUniqueness.insert slug result slugUniqueness) form }, Effect.none )
 
                 _ ->
                     ( model, Effect.none )
 
         LagreSkjemaEndringerTrykket ->
             case model.formState of
-                Editing shortnameUniqueness form ->
-                    case TeamSettingsForm.validate shortnameUniqueness form of
+                Editing slugUniqueness form ->
+                    case TeamSettingsForm.validate slugUniqueness form of
                         Just validated ->
                             ( { model | formState = SavingForm validated }
                             , Api.updateTeam apiKey UpdateTeamSummaryResponse accessToken validated
@@ -270,7 +270,7 @@ successUpdate apiKey accessToken msg model =
                                 | formState =
                                     form
                                         |> TeamSettingsForm.visAlleFeilmeldinger
-                                        |> Editing shortnameUniqueness
+                                        |> Editing slugUniqueness
                               }
                             , Effect.none
                             )
@@ -291,7 +291,7 @@ successUpdate apiKey accessToken msg model =
                                 , formState = NoForm
                               }
                             , Effect.replaceRoute
-                                { path = Route.Path.Team__Settings { team = TeamSummary.shortname teamSummary }
+                                { path = Route.Path.Team__Settings { team = TeamSummary.slug teamSummary }
                                 , query = Dict.empty
                                 , hash = Nothing
                                 }
@@ -551,28 +551,28 @@ viewInnstillingerSection model =
             NoForm ->
                 viewInnstillinger model.team
 
-            Editing shortnameUniqueness form ->
-                viewForm { isLoading = False, shortnameIcon = shortnameStatusIcon model.team form shortnameUniqueness } form
+            Editing slugUniqueness form ->
+                viewForm { isLoading = False, slugIcon = slugStatusIcon model.team form slugUniqueness } form
 
             SavingForm validatedForm ->
                 validatedForm
                     |> TeamSettingsForm.fromValidated
-                    |> viewForm { isLoading = True, shortnameIcon = Nothing }
+                    |> viewForm { isLoading = True, slugIcon = Nothing }
 
             SavingFormFailure validatedForm error ->
                 viewFormFailure validatedForm error
         ]
 
 
-shortnameStatusIcon : Team -> TeamSettingsForm -> ShortnameUniqueness -> Maybe TextInput.StatusIcon
-shortnameStatusIcon team form shortnameUniqueness =
-    if Team.shortname team == TeamSettingsForm.shortname form then
+slugStatusIcon : Team -> TeamSettingsForm -> SlugUniqueness -> Maybe TextInput.StatusIcon
+slugStatusIcon team form slugUniqueness =
+    if Team.slug team == TeamSettingsForm.slug form then
         Just TextInput.Checkmark
 
-    else if ShortnameUniqueness.isLoading shortnameUniqueness (TeamSettingsForm.shortname form) then
+    else if SlugUniqueness.isLoading slugUniqueness (TeamSettingsForm.slug form) then
         Just TextInput.LoadingSpinner
 
-    else if ShortnameUniqueness.isUnique shortnameUniqueness (TeamSettingsForm.shortname form) then
+    else if SlugUniqueness.isUnique slugUniqueness (TeamSettingsForm.slug form) then
         Just TextInput.Checkmark
 
     else
@@ -583,7 +583,7 @@ viewInnstillinger : Team -> Html SuccessMsg
 viewInnstillinger team =
     let
         teamPath =
-            Route.Path.Team_ { team = Team.shortname team }
+            Route.Path.Team_ { team = Team.slug team }
 
         url =
             "https://hvemharstandup.no" ++ Route.Path.toString teamPath
@@ -600,7 +600,7 @@ viewInnstillinger team =
             ]
         ]
         [ viewIndividualSetting { label = "Navn", value = text (Team.navn team) }
-        , viewIndividualSetting { label = "Shortname", value = text (Team.shortname team) }
+        , viewIndividualSetting { label = "Slug", value = text (Team.slug team) }
         , viewIndividualSetting { label = "URL", value = Link.link teamPath [ text url ] |> Link.toHtml }
         , Button.button EndreInnstilingerKnappTrykket "Endre"
             |> Button.withVariant Button.Secondary
@@ -623,8 +623,8 @@ viewIndividualSetting { label, value } =
         ]
 
 
-viewForm : { isLoading : Bool, shortnameIcon : Maybe TextInput.StatusIcon } -> TeamSettingsForm -> Html SuccessMsg
-viewForm { isLoading, shortnameIcon } form =
+viewForm : { isLoading : Bool, slugIcon : Maybe TextInput.StatusIcon } -> TeamSettingsForm -> Html SuccessMsg
+viewForm { isLoading, slugIcon } form =
     Html.form
         [ onSubmit LagreSkjemaEndringerTrykket
         , Attributes.css
@@ -646,14 +646,14 @@ viewForm { isLoading, shortnameIcon } form =
             |> TextInput.onBlur NavnMistetFokus
             |> TextInput.toHtml
         , form
-            |> TeamSettingsForm.shortname
-            |> TextInput.input { label = "Shortname", msg = ShortnameOppdatert }
-            |> TextInput.withStatusIcon shortnameIcon
+            |> TeamSettingsForm.slug
+            |> TextInput.input { label = "Slug", msg = SlugOppdatert }
+            |> TextInput.withStatusIcon slugIcon
             |> TextInput.withDisabled isLoading
-            |> TextInput.withErrorMessage (TeamSettingsForm.feilmeldingShortname form)
-            |> TextInput.onBlur ShortnameMistetFokus
+            |> TextInput.withErrorMessage (TeamSettingsForm.feilmeldingSlug form)
+            |> TextInput.onBlur SlugMistetFokus
             |> TextInput.toHtml
-        , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.shortname form) }
+        , viewIndividualSetting { label = "URL", value = text ("https://hvemharstandup.no/" ++ TeamSettingsForm.slug form) }
         , div [ Attributes.css [ Css.alignSelf Css.end, Css.displayFlex, Css.flexDirection Css.row, Css.property "gap" "12px" ] ]
             [ Button.button AvbrytSkjemaendringTrykket "Avbryt"
                 |> Button.withVariant Button.Secondary

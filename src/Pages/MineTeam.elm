@@ -154,9 +154,9 @@ viewTeam team =
                 , Css.justifyContent Css.spaceBetween
                 ]
             ]
-            [ Link.link (Route.Path.Team_ { team = TeamSummary.shortname team }) [ text (TeamSummary.navn team) ]
+            [ Link.link (Route.Path.Team_ { team = TeamSummary.slug team }) [ text (TeamSummary.navn team) ]
                 |> Link.toHtml
-            , LinkButton.linkButton (Route.Path.Team__Settings { team = TeamSummary.shortname team }) [ text "Innstillinger" ]
+            , LinkButton.linkButton (Route.Path.Team__Settings { team = TeamSummary.slug team }) [ text "Innstillinger" ]
                 |> LinkButton.withVariant Button.Secondary
                 |> LinkButton.toHtml
             ]

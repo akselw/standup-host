@@ -1,5 +1,5 @@
 module Api exposing
-    ( checkShortnameUniqueness
+    ( checkSlugUniqueness
     , createTeam
     , getTeam
     , getTeamsForUser
@@ -16,7 +16,7 @@ import Http
 import Json.Decode exposing (Decoder)
 import Json.Encode
 import LeggTilTeamForm exposing (ValidatedLeggTilTeamForm)
-import ShortnameUniqueness exposing (ShortnameUniquenessCheck)
+import SlugUniqueness exposing (SlugUniquenessCheck)
 import Task exposing (Task)
 import Team exposing (Team)
 import TeamId
@@ -33,8 +33,8 @@ getTeam msg apiKey teamShortName =
         { apiKey = apiKey
         , table = "team"
         , query =
-            [ Url.string "shortname" ("eq." ++ teamShortName)
-            , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            [ Url.string "slug" ("eq." ++ teamShortName)
+            , Url.string "select" "name,id,slug,rotation_length,proper_random,owner_id"
             ]
         , decoder = decodeTeamFromList
         }
@@ -95,22 +95,22 @@ getTeamsForUser apiKey msg accessToken =
         , table = "team"
         , query =
             [ Url.string "owner_id" ("eq." ++ userId)
-            , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            , Url.string "select" "name,id,slug,rotation_length,proper_random,owner_id"
             ]
         , expect = Http.expectJson msg (Json.Decode.list TeamSummary.decoder)
         }
 
 
-checkShortnameUniqueness : DatabaseApiToken -> (Result Http.Error ShortnameUniquenessCheck -> msg) -> String -> Effect msg
-checkShortnameUniqueness apiKey msg shortname =
+checkSlugUniqueness : DatabaseApiToken -> (Result Http.Error SlugUniquenessCheck -> msg) -> String -> Effect msg
+checkSlugUniqueness apiKey msg slug =
     getFromDatabase
         { apiKey = apiKey
         , table = "team"
         , query =
-            [ Url.string "shortname" ("eq." ++ shortname)
-            , Url.string "select" "shortname"
+            [ Url.string "slug" ("eq." ++ slug)
+            , Url.string "select" "slug"
             ]
-        , expect = Http.expectJson msg ShortnameUniqueness.decoder
+        , expect = Http.expectJson msg SlugUniqueness.decoder
         }
 
 
@@ -165,7 +165,7 @@ updateTeam apiKey msg accessToken form =
         , table = "team"
         , query =
             [ Url.string "id" ("eq." ++ TeamSettingsForm.teamId form)
-            , Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            , Url.string "select" "name,id,slug,rotation_length,proper_random,owner_id"
             ]
         , body = TeamSettingsForm.encode form
         , expect = expectSingleElement msg TeamSummary.decoder
@@ -179,7 +179,7 @@ createTeam apiKey msg accessToken form =
         , accessToken = accessToken
         , table = "team"
         , query =
-            [ Url.string "select" "name,id,shortname,rotation_length,proper_random,owner_id"
+            [ Url.string "select" "name,id,slug,rotation_length,proper_random,owner_id"
             ]
         , body =
             accessToken

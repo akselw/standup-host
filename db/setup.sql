@@ -4,11 +4,11 @@ create table team
 (
     id              uuid            not null default uuid_generate_v4(),
     name            text            not null,
-    shortname       text            not null,
+    slug       text            not null,
     rotation_length rotation_length not null default 'DAILY',
     proper_random   boolean         not null default TRUE,
     owner_id        uuid            not null references auth.users,
-    constraint unique_shortname unique (shortname),
+    constraint unique_slug unique (slug),
     primary key (id)
 );
 
