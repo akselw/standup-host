@@ -1,6 +1,23 @@
-module LeggTilTeamForm exposing (LeggTilTeamForm, ValidatedLeggTilTeamForm, encode, feilmeldingNavn, feilmeldingSlug, fromValidated, init, navn, oppdaterNavn, oppdaterSlug, slug, validate, visAlleFeilmeldinger, visFeilmeldingNavn, visFeilmeldingSlug)
+module LeggTilTeamForm exposing
+    ( LeggTilTeamForm
+    , ValidatedLeggTilTeamForm
+    , encode
+    , feilmeldingNavn
+    , feilmeldingSlug
+    , fromValidated
+    , init
+    , navn
+    , oppdaterNavn
+    , oppdaterSlug
+    , slug
+    , validate
+    , visAlleFeilmeldinger
+    , visFeilmeldingNavn
+    , visFeilmeldingSlug
+    )
 
 import Json.Encode
+import Slug exposing (Slug)
 import SlugUniqueness exposing (SlugUniqueness)
 import UserId exposing (UserId)
 
@@ -119,19 +136,23 @@ visAlleFeilmeldinger form =
 type ValidatedLeggTilTeamForm
     = ValidatedForm
         { navn : String
-        , slug : String
+        , slug : Slug
         }
 
 
 validate : SlugUniqueness -> LeggTilTeamForm -> Maybe ValidatedLeggTilTeamForm
 validate slugUniqueness (Form form) =
     if navnErGyldig form.navn && slugErGyldig form.slug && SlugUniqueness.isUnique slugUniqueness form.slug then
-        Just
-            (ValidatedForm
-                { navn = form.navn
-                , slug = form.slug
-                }
-            )
+        form.slug
+            |> Slug.fromString
+            |> Result.toMaybe
+            |> Maybe.map
+                (\slug_ ->
+                    ValidatedForm
+                        { navn = form.navn
+                        , slug = slug_
+                        }
+                )
 
     else
         Nothing
@@ -141,7 +162,7 @@ fromValidated : ValidatedLeggTilTeamForm -> LeggTilTeamForm
 fromValidated (ValidatedForm form) =
     Form
         { navn = form.navn
-        , slug = form.slug
+        , slug = Slug.toString form.slug
         , visFeilmeldingNavn = False
         , visFeilmeldingSlug = False
         }
@@ -155,6 +176,6 @@ encode : ValidatedLeggTilTeamForm -> UserId -> Json.Encode.Value
 encode (ValidatedForm form) userId =
     Json.Encode.object
         [ ( "name", Json.Encode.string form.navn )
-        , ( "slug", Json.Encode.string form.slug )
+        , ( "slug", Slug.encode form.slug )
         , ( "owner_id", UserId.encode userId )
         ]

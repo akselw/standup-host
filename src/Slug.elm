@@ -1,8 +1,14 @@
 module Slug exposing
     ( Error(..)
     , Slug
+    , decoder
+    , encode
     , fromString
+    , toString
     )
+
+import Json.Decode exposing (Decoder)
+import Json.Encode
 
 
 type Slug
@@ -84,3 +90,31 @@ isInBlacklist string =
         , "team"
         , "legg-til"
         ]
+
+
+
+--- TO STRING ---
+
+
+toString : Slug -> String
+toString (Slug slug) =
+    slug
+
+
+
+--- ENCODE ---
+
+
+encode : Slug -> Json.Encode.Value
+encode (Slug slug) =
+    Json.Encode.string slug
+
+
+
+--- DECODER ---
+
+
+decoder : Decoder Slug
+decoder =
+    Json.Decode.string
+        |> Json.Decode.map Slug
