@@ -32,6 +32,7 @@ wrongFormat string =
         isCorrectFormat =
             String.all isLowerAlphaNumOrDash string
                 && firstAndLastIsAlphaNum string
+                && hasNoDoubleDashes string
     in
     not isCorrectFormat
 
@@ -63,6 +64,13 @@ isLowerAlphaNumOrDash char =
         == '-'
         || Char.isDigit char
         || (Char.isLower char && Char.isAlpha char)
+
+
+hasNoDoubleDashes : String -> Bool
+hasNoDoubleDashes string =
+    string
+        |> String.contains "--"
+        |> not
 
 
 slugInBlacklist : String -> Bool
