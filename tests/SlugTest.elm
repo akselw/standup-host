@@ -30,5 +30,15 @@ suite =
                     "test-"
                         |> Slug.fromString
                         |> Expect.equal (Err WrongFormat)
+            , test "reject strings with uppercase letters" <|
+                \_ ->
+                    "Test"
+                        |> Slug.fromString
+                        |> Expect.equal (Err WrongFormat)
+            , test "reject strings with more than one dash after one another" <|
+                \_ ->
+                    "test--test"
+                        |> Slug.fromString
+                        |> Expect.equal (Err WrongFormat)
             ]
         ]
