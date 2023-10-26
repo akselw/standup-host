@@ -75,4 +75,12 @@ hasNoDoubleDashes string =
 
 slugInBlacklist : String -> Bool
 slugInBlacklist string =
-    False
+    List.member string
+        [ "admin"
+        , "settings"
+        , "mine-team"
+        , "login"
+        , "oauth"
+        , "team"
+        , "legg-til"
+        ]
