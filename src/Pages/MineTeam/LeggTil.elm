@@ -185,7 +185,7 @@ update apiKey accessToken msg model =
         CreateTeamResponse (Ok teamSummary) ->
             ( model
             , Effect.pushRoute
-                { path = Route.Path.Team__Settings { team = TeamSummary.slug teamSummary }
+                { path = Route.Path.Team__Settings { team = TeamSummary.slugString teamSummary }
                 , query = Dict.empty
                 , hash = Nothing
                 }

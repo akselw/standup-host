@@ -39,7 +39,7 @@ init : Team -> TeamSettingsForm
 init team =
     Form
         { navn = Team.navn team
-        , slug = Team.slug team
+        , slug = Team.slugString team
         , visFeilmeldingNavn = False
         , visFeilmeldingSlug = False
         , team = team
@@ -167,7 +167,7 @@ validate slugUniqueness (Form form) =
 
 slugErUnique : SlugUniqueness -> { r | slug : String, team : Team } -> Bool
 slugErUnique slugUniqueness form =
-    Team.slug form.team == form.slug || SlugUniqueness.isUnique slugUniqueness form.slug
+    Team.slugString form.team == form.slug || SlugUniqueness.isUnique slugUniqueness form.slug
 
 
 teamId : ValidatedTeamSettingsForm -> String

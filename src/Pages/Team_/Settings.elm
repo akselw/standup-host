@@ -291,7 +291,7 @@ successUpdate apiKey accessToken msg model =
                                 , formState = NoForm
                               }
                             , Effect.replaceRoute
-                                { path = Route.Path.Team__Settings { team = TeamSummary.slug teamSummary }
+                                { path = Route.Path.Team__Settings { team = TeamSummary.slugString teamSummary }
                                 , query = Dict.empty
                                 , hash = Nothing
                                 }
@@ -566,7 +566,7 @@ viewInnstillingerSection model =
 
 slugStatusIcon : Team -> TeamSettingsForm -> SlugUniqueness -> Maybe TextInput.StatusIcon
 slugStatusIcon team form slugUniqueness =
-    if Team.slug team == TeamSettingsForm.slug form then
+    if Team.slugString team == TeamSettingsForm.slug form then
         Just TextInput.Checkmark
 
     else if SlugUniqueness.isLoading slugUniqueness (TeamSettingsForm.slug form) then
@@ -583,7 +583,7 @@ viewInnstillinger : Team -> Html SuccessMsg
 viewInnstillinger team =
     let
         teamPath =
-            Route.Path.Team_ { team = Team.slug team }
+            Route.Path.Team_ { team = Team.slugString team }
 
         url =
             "https://hvemharstandup.no" ++ Route.Path.toString teamPath
@@ -600,7 +600,7 @@ viewInnstillinger team =
             ]
         ]
         [ viewIndividualSetting { label = "Navn", value = text (Team.navn team) }
-        , viewIndividualSetting { label = "Slug", value = text (Team.slug team) }
+        , viewIndividualSetting { label = "Slug", value = text (Team.slugString team) }
         , viewIndividualSetting { label = "URL", value = Link.link teamPath [ text url ] |> Link.toHtml }
         , Button.button EndreInnstilingerKnappTrykket "Endre"
             |> Button.withVariant Button.Secondary

@@ -13,6 +13,7 @@ import Page exposing (Page)
 import Route exposing (Route)
 import Route.Path
 import Shared
+import Slug
 import TeamSummary exposing (TeamSummary)
 import View exposing (View)
 import View.Button as Button
@@ -154,9 +155,9 @@ viewTeam team =
                 , Css.justifyContent Css.spaceBetween
                 ]
             ]
-            [ Link.link (Route.Path.Team_ { team = TeamSummary.slug team }) [ text (TeamSummary.navn team) ]
+            [ Link.link (Route.Path.Team_ { team = TeamSummary.slugString team }) [ text (TeamSummary.navn team) ]
                 |> Link.toHtml
-            , LinkButton.linkButton (Route.Path.Team__Settings { team = TeamSummary.slug team }) [ text "Innstillinger" ]
+            , LinkButton.linkButton (Route.Path.Team__Settings { team = TeamSummary.slugString team }) [ text "Innstillinger" ]
                 |> LinkButton.withVariant Button.Secondary
                 |> LinkButton.toHtml
             ]

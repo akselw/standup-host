@@ -7,10 +7,12 @@ module Team exposing
     , medlemmer
     , navn
     , slug
+    , slugString
     , updateTeamSummary
     )
 
 import Http
+import Slug exposing (Slug)
 import TeamId exposing (TeamId)
 import TeamSummary exposing (TeamSummary)
 import Teammedlem exposing (Teammedlem)
@@ -41,9 +43,14 @@ navn (Team { summary }) =
     TeamSummary.navn summary
 
 
-slug : Team -> String
+slug : Team -> Slug
 slug (Team { summary }) =
     TeamSummary.slug summary
+
+
+slugString : Team -> String
+slugString (Team { summary }) =
+    TeamSummary.slugString summary
 
 
 id : Team -> TeamId
