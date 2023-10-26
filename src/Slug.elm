@@ -28,7 +28,16 @@ fromString string =
 
 wrongFormat : String -> Bool
 wrongFormat string =
-    True
+    String.all isLowerAlphaNumOrDash string
+
+
+isLowerAlphaNumOrDash : Char -> Bool
+isLowerAlphaNumOrDash char =
+    char
+        == '-'
+        || Char.isDigit char
+        || (Char.isLower char && Char.isAlpha char)
+        |> Debug.log (String.fromChar char)
 
 
 slugInBlacklist : String -> Bool
