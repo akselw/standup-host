@@ -9,6 +9,8 @@ create table team
     proper_random   boolean         not null default TRUE,
     owner_id        uuid            not null references auth.users,
     constraint unique_slug unique (slug),
+    constraint slug_format CHECK (slug ~* '^[a-z0-9]+(-[a-z0-9]+)*$'),
+    constraint slug_blacklist CHECK (slug not in ('admin', 'settings', 'mine-team', 'login', 'oauth', 'team', 'legg-til')),
     primary key (id)
 );
 
