@@ -28,7 +28,33 @@ fromString string =
 
 wrongFormat : String -> Bool
 wrongFormat string =
-    String.all isLowerAlphaNumOrDash string
+    let
+        isCorrectFormat =
+            String.all isLowerAlphaNumOrDash string
+                && firstAndLastIsAlphaNum string
+    in
+    not isCorrectFormat
+
+
+firstAndLastIsAlphaNum : String -> Bool
+firstAndLastIsAlphaNum string =
+    let
+        firstIsAlphaNum =
+            string
+                |> String.toList
+                |> List.head
+                |> Maybe.map Char.isAlphaNum
+                |> Maybe.withDefault False
+
+        lastIsAlphaNum =
+            string
+                |> String.toList
+                |> List.reverse
+                |> List.head
+                |> Maybe.map Char.isAlphaNum
+                |> Maybe.withDefault False
+    in
+    firstIsAlphaNum && lastIsAlphaNum
 
 
 isLowerAlphaNumOrDash : Char -> Bool
@@ -37,9 +63,8 @@ isLowerAlphaNumOrDash char =
         == '-'
         || Char.isDigit char
         || (Char.isLower char && Char.isAlpha char)
-        |> Debug.log (String.fromChar char)
 
 
 slugInBlacklist : String -> Bool
 slugInBlacklist string =
-    True
+    False
