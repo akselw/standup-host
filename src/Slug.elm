@@ -16,18 +16,18 @@ type Error
 
 fromString : String -> Result Error Slug
 fromString string =
-    if wrongFormat string then
+    if hasWrongFormat string then
         Err WrongFormat
 
-    else if slugInBlacklist string then
+    else if isInBlacklist string then
         Err SlugInBlacklist
 
     else
         Ok (Slug string)
 
 
-wrongFormat : String -> Bool
-wrongFormat string =
+hasWrongFormat : String -> Bool
+hasWrongFormat string =
     let
         isCorrectFormat =
             String.all isLowerAlphaNumOrDash string
@@ -73,8 +73,8 @@ hasNoDoubleDashes string =
         |> not
 
 
-slugInBlacklist : String -> Bool
-slugInBlacklist string =
+isInBlacklist : String -> Bool
+isInBlacklist string =
     List.member string
         [ "admin"
         , "settings"
